@@ -1,7 +1,7 @@
 {
-  "name": "콩콩이의 단어모험",
-  "short_name": "콩콩이",
-  "description": "캐릭터를 키우며 영어·일본어 단어를 외우는 교육용 게임",
+  "name": "인찌",
+  "short_name": "인찌",
+  "description": "인찌와 함께 초등 전과목(국어·수학·사회·과학·체육·예술·영어)을 게임으로 배우는 교육용 앱",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

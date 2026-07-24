@@ -3,502 +3,189 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>콩콩이의 단어 모험</title>
+<title>인찌</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="콩콩이">
+<meta name="apple-mobile-web-app-title" content="인찌">
 <meta name="theme-color" content="#FF8FAE">
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Baloo+2:wght@500;600;700;800&display=swap');
 
   :root{
-    --bg1:#FFF3FA;
-    --bg2:#F1E9FF;
-    --card:#FFFFFF;
-    --pink:#FF8FAE;
-    --pink-dk:#E85D82;
-    --pink-bg:#FFE3EE;
-    --purple:#B79CED;
-    --purple-dk:#8B6FD1;
-    --purple-bg:#F1E9FF;
-    --mint:#6FE0C0;
-    --mint-dk:#2FBE9A;
-    --mint-bg:#DFFBF3;
-    --yellow:#FFD166;
-    --yellow-dk:#E8A93A;
-    --yellow-bg:#FFF3D9;
-    --sky:#7EC8E9;
-    --sky-dk:#4AA9D6;
-    --coral:#FF6B6B;
-    --ink:#4A3B52;
-    --muted:#A491AC;
-    --line:#F3DCEA;
+    --bg1:#FFF3FA; --bg2:#F1E9FF; --card:#FFFFFF;
+    --pink:#FF8FAE; --pink-dk:#E85D82; --pink-bg:#FFE3EE;
+    --purple:#B79CED; --purple-dk:#8B6FD1; --purple-bg:#F1E9FF;
+    --mint:#6FE0C0; --mint-dk:#2FBE9A; --mint-bg:#DFFBF3;
+    --yellow:#FFD166; --yellow-dk:#E8A93A; --yellow-bg:#FFF3D9;
+    --sky:#7EC8E9; --sky-dk:#4AA9D6; --coral:#FF6B6B;
+    --ink:#4A3B52; --muted:#A491AC; --line:#F3DCEA;
   }
-
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background: linear-gradient(160deg, var(--bg1), var(--bg2));
-    font-family:'Gaegu', sans-serif;
-    color:var(--ink);
-    display:flex;
-    justify-content:center;
-    min-height:100vh;
-    padding:16px;
+    font-family:'Gaegu', sans-serif; color:var(--ink);
+    display:flex; justify-content:center; min-height:100vh; padding:16px;
   }
-
   .shell{
-    width:100%;
-    max-width:420px;
-    background: var(--card);
-    border-radius:30px;
-    padding:18px 16px 24px;
-    position:relative;
-    overflow:hidden;
-    box-shadow: 0 10px 30px rgba(180,120,200,0.18);
-    border:3px solid #fff;
+    width:100%; max-width:420px; background: var(--card);
+    border-radius:30px; padding:16px 16px 24px; position:relative; overflow:hidden;
+    box-shadow: 0 10px 30px rgba(180,120,200,0.18); border:3px solid #fff;
   }
-
   .screen{ display:none; position:relative; z-index:1; }
   .screen.active{ display:block; animation:fadein .25s ease; }
   @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
 
-  h1{
-    font-family:'Jua', sans-serif;
-    font-size:22px;
-    font-weight:400;
-    margin:2px 0 2px;
-    color:var(--pink-dk);
-    text-align:center;
+  h1{ font-family:'Jua', sans-serif; font-size:21px; font-weight:400; margin:2px 0 2px; color:var(--pink-dk); text-align:center; }
+  .sub{ color:var(--muted); font-size:13px; margin:0 0 14px; text-align:center; }
+
+  .top-strip{ display:flex; justify-content:flex-end; align-items:center; gap:6px; margin-bottom:6px; }
+  .top-strip span{ font-size:11px; color:var(--muted); }
+  .logout-btn{ background:var(--bg1); border:none; border-radius:10px; padding:5px 10px; font-size:11px; color:var(--muted); font-family:'Gaegu',sans-serif; cursor:pointer; }
+
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-size:12px; color:var(--purple-dk); font-weight:700; margin-bottom:5px; font-family:'Jua',sans-serif; }
+  .field input{
+    width:100%; padding:12px 14px; border-radius:14px; border:2px solid var(--line);
+    font-family:'Gaegu',sans-serif; font-size:14px; color:var(--ink); background:var(--bg1);
   }
-  .sub{
-    color:var(--muted);
-    font-size:13px;
-    margin:0 0 14px;
-    text-align:center;
-  }
+  .field input:focus{ outline:none; border-color:var(--pink); }
+  .auth-error{ color:var(--coral); font-size:12px; font-weight:700; text-align:center; margin:-4px 0 10px; min-height:14px; }
+  .auth-buttons{ display:flex; gap:8px; margin-top:4px; }
+  .login-emoji{ font-size:54px; text-align:center; margin:10px 0 6px; }
 
   .pet-card{
     background: linear-gradient(150deg, var(--pink-bg), var(--purple-bg));
-    border-radius:24px;
-    padding:16px;
-    margin-bottom:16px;
-    position:relative;
-    text-align:center;
-    border:2px dashed #fff;
+    border-radius:24px; padding:14px; margin-bottom:14px; position:relative; text-align:center; border:2px dashed #fff;
   }
   .pet-bubble{
-    background:#fff;
-    border-radius:16px;
-    padding:6px 12px;
-    display:inline-block;
-    font-size:12px;
-    color:var(--pink-dk);
-    font-weight:700;
-    margin-bottom:6px;
-    box-shadow:0 3px 0 rgba(0,0,0,0.04);
+    background:#fff; border-radius:16px; padding:6px 12px; display:inline-block;
+    font-size:12px; color:var(--pink-dk); font-weight:700; margin-bottom:6px; box-shadow:0 3px 0 rgba(0,0,0,0.04);
   }
-  .pet-emoji{
-    font-size:64px;
-    line-height:1;
-    animation: idle-bounce 2.2s ease-in-out infinite;
-    display:inline-block;
-    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08));
-  }
-  .pet-emoji.acc-after{ font-size:28px; margin-left:2px; vertical-align:14px; }
-  @keyframes idle-bounce{
-    0%,100%{ transform:translateY(0) rotate(0deg); }
-    50%{ transform:translateY(-6px) rotate(-3deg); }
-  }
-  .pet-name{
-    font-family:'Jua', sans-serif;
-    font-size:16px;
-    color:var(--ink);
-    margin-top:2px;
-  }
-  .pet-stats{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-top:10px;
-  }
-  .lv-badge{
-    background:var(--pink);
-    color:#fff;
-    font-family:'Jua', sans-serif;
-    font-size:12px;
-    padding:5px 10px;
-    border-radius:20px;
-    white-space:nowrap;
-  }
-  .xp-track{
-    flex:1;
-    height:10px;
-    background:rgba(255,255,255,0.7);
-    border-radius:8px;
-    overflow:hidden;
-    border:1.5px solid #fff;
-  }
-  .xp-fill{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg, var(--mint), var(--sky));
-    border-radius:8px;
-    transition:width .4s ease;
-  }
-  .coin-badge{
-    background:var(--yellow);
-    color:#7A5300;
-    font-family:'Jua', sans-serif;
-    font-size:12px;
-    padding:5px 10px;
-    border-radius:20px;
-    white-space:nowrap;
-  }
-  .deco-btn{
-    position:absolute;
-    top:12px; right:12px;
-    background:#fff;
-    border:none;
-    border-radius:14px;
-    padding:6px 10px;
-    font-size:12px;
-    font-family:'Jua', sans-serif;
-    color:var(--purple-dk);
-    cursor:pointer;
-    box-shadow:0 3px 0 rgba(0,0,0,0.06);
-  }
+  .pet-emoji{ font-size:56px; line-height:1; animation: idle-bounce 2.2s ease-in-out infinite; display:inline-block; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08)); }
+  .pet-emoji.acc-after{ font-size:26px; margin-left:2px; vertical-align:12px; }
+  @keyframes idle-bounce{ 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-6px) rotate(-3deg); } }
+  .pet-name{ font-family:'Jua', sans-serif; font-size:14px; color:var(--ink); margin-top:2px; }
+  .pet-stats{ display:flex; align-items:center; gap:8px; margin-top:8px; }
+  .lv-badge{ background:var(--pink); color:#fff; font-family:'Jua', sans-serif; font-size:12px; padding:5px 10px; border-radius:20px; white-space:nowrap; }
+  .xp-track{ flex:1; height:10px; background:rgba(255,255,255,0.7); border-radius:8px; overflow:hidden; border:1.5px solid #fff; }
+  .xp-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--mint), var(--sky)); border-radius:8px; transition:width .4s ease; }
+  .coin-badge{ background:var(--yellow); color:#7A5300; font-family:'Jua', sans-serif; font-size:12px; padding:5px 10px; border-radius:20px; white-space:nowrap; }
+  .deco-btn{ position:absolute; top:10px; background:#fff; border:none; border-radius:14px; padding:6px 9px; font-size:11px; font-family:'Jua', sans-serif; color:var(--purple-dk); cursor:pointer; box-shadow:0 3px 0 rgba(0,0,0,0.06); }
   .deco-btn:active{ transform:translateY(2px); box-shadow:none; }
-
-  .group-label{
-    font-size:13px;
-    color:var(--purple-dk);
-    font-weight:700;
-    margin:14px 0 8px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    font-family:'Jua', sans-serif;
+  .deco-btn.shop{ right:10px; }
+  .deco-btn.room{ left:10px; }
+  .pet-empty-btn{
+    margin-top:8px; background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff; border:none;
+    padding:9px 16px; border-radius:14px; font-family:'Jua',sans-serif; font-size:12px; cursor:pointer;
   }
 
-  .chips{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-  }
+  .group-label{ font-size:13px; color:var(--purple-dk); font-weight:700; margin:12px 0 7px; display:flex; align-items:center; gap:6px; font-family:'Jua', sans-serif; }
+  .chips{ display:grid; grid-template-columns:1fr 1fr; gap:7px; }
   .chips.three{ grid-template-columns:1fr 1fr 1fr; }
-
+  .chips.four{ grid-template-columns:1fr 1fr 1fr 1fr; }
   .chip{
-    background:var(--bg1);
-    border:2px solid transparent;
-    border-radius:16px;
-    padding:10px 6px;
-    color:var(--ink);
-    font-family:'Gaegu', sans-serif;
-    font-size:13px;
-    font-weight:700;
-    text-align:center;
-    cursor:pointer;
-    transition:transform .12s ease, border-color .15s ease, background .15s ease;
-    line-height:1.3;
+    background:var(--bg1); border:2px solid transparent; border-radius:14px; padding:9px 4px; color:var(--ink);
+    font-family:'Gaegu', sans-serif; font-size:12px; font-weight:700; text-align:center; cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease; line-height:1.25;
   }
-  .chip .big{ display:block; font-size:22px; margin-bottom:2px; }
+  .chip .big{ display:block; font-size:19px; margin-bottom:1px; }
   .chip:active{ transform:scale(0.95); }
-  .chip.selected{
-    border-color:var(--pink);
-    background:var(--pink-bg);
-    color:var(--pink-dk);
-  }
+  .chip.selected{ border-color:var(--pink); background:var(--pink-bg); color:var(--pink-dk); }
 
   .start-btn{
-    width:100%;
-    margin-top:18px;
-    padding:15px;
-    border:none;
-    border-radius:20px;
-    background: linear-gradient(120deg, var(--pink), var(--purple));
-    color:#fff;
-    font-family:'Jua', sans-serif;
-    font-size:17px;
-    cursor:pointer;
-    box-shadow: 0 5px 0 var(--pink-dk);
+    width:100%; margin-top:16px; padding:15px; border:none; border-radius:20px;
+    background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff;
+    font-family:'Jua', sans-serif; font-size:16px; cursor:pointer; box-shadow: 0 5px 0 var(--pink-dk);
   }
   .start-btn:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--pink-dk); }
+  .start-btn:disabled{ opacity:.5; }
 
-  .topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:12px;
+  .species-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+  .species-item{
+    background:var(--bg1); border-radius:16px; padding:16px 6px; text-align:center; border:2px solid transparent; cursor:pointer;
   }
-  .back-btn{
-    background:var(--bg1);
-    border:none;
-    width:34px;height:34px;
-    border-radius:12px;
-    color:var(--ink);
-    font-size:16px;
-    cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
+  .species-item .ic{ font-size:36px; display:block; margin-bottom:6px; }
+  .species-item .nm{ font-family:'Jua',sans-serif; font-size:12px; }
+  .species-item:active{ transform:scale(.96); }
+
+  .room-scene{
+    border-radius:22px; padding:20px 14px; margin-bottom:14px; text-align:center; border:2px solid #fff; min-height:180px;
+    display:flex; flex-direction:column; justify-content:flex-end; position:relative;
   }
-  .mini-avatar-wrap{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    background:var(--pink-bg);
-    border-radius:14px;
-    padding:4px 10px 4px 4px;
-  }
-  .mini-avatar{
-    font-size:22px;
-    display:inline-block;
-  }
+  .room-floor{ display:flex; justify-content:center; gap:14px; font-size:30px; margin-top:14px; flex-wrap:wrap; }
+  .room-title{ font-family:'Jua',sans-serif; font-size:15px; color:var(--ink); margin-bottom:4px; }
+  .room-next{ font-size:11px; color:var(--muted); font-weight:700; margin-top:8px; text-align:center; }
+
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .back-btn{ background:var(--bg1); border:none; width:34px;height:34px; border-radius:12px; color:var(--ink); font-size:16px; cursor:pointer; display:flex;align-items:center;justify-content:center; }
+  .mini-avatar-wrap{ display:flex; align-items:center; gap:6px; background:var(--pink-bg); border-radius:14px; padding:4px 10px 4px 4px; }
+  .mini-avatar{ font-size:22px; display:inline-block; }
   .mini-avatar.bounce{ animation: mini-bounce .5s ease; }
   .mini-avatar.shake{ animation: mini-shake .4s ease; }
-  @keyframes mini-bounce{
-    0%{ transform:scale(1); } 40%{ transform:scale(1.35) rotate(-8deg); } 100%{ transform:scale(1); }
-  }
-  @keyframes mini-shake{
-    0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px) rotate(-6deg); } 75%{ transform:translateX(4px) rotate(6deg); }
-  }
+  @keyframes mini-bounce{ 0%{ transform:scale(1); } 40%{ transform:scale(1.35) rotate(-8deg); } 100%{ transform:scale(1); } }
+  @keyframes mini-shake{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px) rotate(-6deg); } 75%{ transform:translateX(4px) rotate(6deg); } }
   .stat-pills{ display:flex; gap:6px; }
-  .pill{
-    background:var(--bg1);
-    border-radius:12px;
-    padding:6px 10px;
-    font-size:12px;
-    color:var(--muted);
-    font-weight:700;
-  }
+  .pill{ background:var(--bg1); border-radius:12px; padding:6px 10px; font-size:12px; color:var(--muted); font-weight:700; }
   .pill b{ color:var(--ink); }
 
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(4, 1fr);
-    gap:8px;
-  }
-
-  .tile{
-    aspect-ratio:3/4;
-    perspective:600px;
-    cursor:pointer;
-  }
-  .tile-inner{
-    position:relative;
-    width:100%;height:100%;
-    transform-style:preserve-3d;
-    transition:transform .35s cubic-bezier(.2,.8,.3,1);
-  }
+  .grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; }
+  .tile{ aspect-ratio:3/4; perspective:600px; cursor:pointer; }
+  .tile-inner{ position:relative; width:100%;height:100%; transform-style:preserve-3d; transition:transform .35s cubic-bezier(.2,.8,.3,1); }
   .tile.flipped .tile-inner{ transform:rotateY(180deg); }
   .tile.matched .tile-inner{ transform:rotateY(180deg); }
-  .tile-face{
-    position:absolute; inset:0;
-    border-radius:14px;
-    display:flex;align-items:center;justify-content:center;
-    backface-visibility:hidden;
-    padding:4px;
-    text-align:center;
-  }
-  .tile-back{
-    background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg));
-    border:2px solid #fff;
-  }
-  .tile-back::after{
-    content:"★";
-    font-size:16px;
-    color:var(--purple-dk);
-    opacity:.6;
-  }
-  .tile-front{
-    background:#fff;
-    color:var(--ink);
-    transform:rotateY(180deg);
-    font-weight:700;
-    font-size:12px;
-    line-height:1.25;
-    word-break:keep-all;
-    border:2px solid var(--pink-bg);
-  }
-  .tile-front.jp{ font-size:14px; }
-  .tile-front.kr{ font-size:12px; color:var(--purple-dk); }
-  .tile.matched .tile-front{
-    background:var(--mint);
-    color:#0B4B3C;
-    border-color:var(--mint-dk);
-  }
-  .tile.wrong .tile-front{
-    background:var(--coral);
-    color:#fff;
-    border-color:#C23D3D;
-  }
+  .tile-face{ position:absolute; inset:0; border-radius:14px; display:flex;align-items:center;justify-content:center; backface-visibility:hidden; padding:4px; text-align:center; }
+  .tile-back{ background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg)); border:2px solid #fff; }
+  .tile-back::after{ content:"★"; font-size:16px; color:var(--purple-dk); opacity:.6; }
+  .tile-front{ background:#fff; color:var(--ink); transform:rotateY(180deg); font-weight:700; font-size:11px; line-height:1.25; word-break:keep-all; border:2px solid var(--pink-bg); }
+  .tile-front.kr{ font-size:11px; color:var(--purple-dk); }
+  .tile.matched .tile-front{ background:var(--mint); color:#0B4B3C; border-color:var(--mint-dk); }
+  .tile.wrong .tile-front{ background:var(--coral); color:#fff; border-color:#C23D3D; }
 
-  .quiz-card{
-    background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg));
-    border-radius:22px;
-    padding:30px 16px;
-    text-align:center;
-    margin-bottom:16px;
-    position:relative;
-    overflow:hidden;
-    border:2px solid #fff;
-  }
-  .quiz-timerbar{
-    position:absolute; top:0; left:0; height:5px;
-    background:var(--coral);
-    width:100%;
-    border-radius:0 0 6px 6px;
-  }
-  .quiz-word{
-    font-family:'Baloo 2','Gaegu', sans-serif;
-    font-size:30px;
-    font-weight:700;
-    color:var(--ink);
-    word-break:break-word;
-  }
-  .quiz-romaji{
-    font-size:13px;
-    color:var(--purple-dk);
-    margin-top:6px;
-    font-weight:700;
-  }
+  .quiz-card{ background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg)); border-radius:22px; padding:26px 16px; text-align:center; margin-bottom:16px; position:relative; overflow:hidden; border:2px solid #fff; }
+  .quiz-timerbar{ position:absolute; top:0; left:0; height:5px; background:var(--coral); width:100%; border-radius:0 0 6px 6px; }
+  .quiz-word{ font-family:'Baloo 2','Gaegu', sans-serif; font-size:26px; font-weight:700; color:var(--ink); word-break:break-word; }
+  .quiz-romaji{ font-size:13px; color:var(--purple-dk); margin-top:6px; font-weight:700; }
 
-  .answers{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-  }
-  .answer-btn{
-    background:var(--bg1);
-    border:2px solid transparent;
-    border-radius:16px;
-    padding:15px 8px;
-    color:var(--ink);
-    font-family:'Gaegu', sans-serif;
-    font-size:14px;
-    font-weight:700;
-    cursor:pointer;
-    transition:transform .1s ease;
-  }
+  .answers{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .answer-btn{ background:var(--bg1); border:2px solid transparent; border-radius:16px; padding:14px 8px; color:var(--ink); font-family:'Gaegu', sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:transform .1s ease; }
   .answer-btn:active{ transform:scale(0.96); }
   .answer-btn.correct{ background:var(--mint-bg); border-color:var(--mint-dk); color:#0B4B3C; }
   .answer-btn.wrong{ background:#FFE3E3; border-color:var(--coral); color:#B23A3A; }
 
-  .streak-bar{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-bottom:14px;
-    background:var(--yellow-bg);
-    border-radius:14px;
-    padding:9px 14px;
-  }
+  .streak-bar{ display:flex; align-items:center; gap:8px; margin-bottom:14px; background:var(--yellow-bg); border-radius:14px; padding:9px 14px; }
   .streak-label{ font-size:12px; color:var(--yellow-dk); font-weight:700; }
-  .streak-track{
-    flex:1;
-    height:8px;
-    background:rgba(255,255,255,0.7);
-    border-radius:6px;
-    overflow:hidden;
-  }
-  .streak-fill{
-    height:100%;
-    width:0%;
-    background: linear-gradient(90deg, var(--yellow), var(--coral));
-    border-radius:6px;
-    transition:width .25s ease;
-  }
+  .streak-track{ flex:1; height:8px; background:rgba(255,255,255,0.7); border-radius:6px; overflow:hidden; }
+  .streak-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--yellow), var(--coral)); border-radius:6px; transition:width .25s ease; }
   .streak-num{ font-family:'Jua', sans-serif; font-size:14px; color:var(--yellow-dk); min-width:20px; text-align:right; }
 
-  .result-emoji{
-    font-size:56px;
-    text-align:center;
-    margin:6px 0 6px;
-    animation: idle-bounce 1.6s ease-in-out infinite;
-  }
-  .result-title{
-    font-family:'Jua', sans-serif;
-    font-size:20px;
-    text-align:center;
-    color:var(--pink-dk);
-    margin-bottom:2px;
-  }
-  .result-sub{
-    text-align:center;
-    color:var(--muted);
-    font-size:13px;
-    margin-bottom:14px;
-  }
-  .stat-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .stat-card{
-    background:var(--bg1);
-    border-radius:16px;
-    padding:12px;
-    text-align:center;
-  }
-  .stat-card .v{
-    font-family:'Jua', sans-serif;
-    font-size:20px;
-    color:var(--pink-dk);
-  }
-  .stat-card .l{
-    font-size:11px;
-    color:var(--muted);
-    margin-top:2px;
-    font-weight:700;
-  }
-  .reward-row{
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .reward-chip{
-    background:var(--mint-bg);
-    color:#0B4B3C;
-    font-family:'Jua', sans-serif;
-    font-size:13px;
-    padding:6px 14px;
-    border-radius:20px;
-  }
+  .result-emoji{ font-size:56px; text-align:center; margin:6px 0 6px; animation: idle-bounce 1.6s ease-in-out infinite; }
+  .result-title{ font-family:'Jua', sans-serif; font-size:20px; text-align:center; color:var(--pink-dk); margin-bottom:2px; }
+  .result-sub{ text-align:center; color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .stat-card{ background:var(--bg1); border-radius:16px; padding:12px; text-align:center; }
+  .stat-card .v{ font-family:'Jua', sans-serif; font-size:20px; color:var(--pink-dk); }
+  .stat-card .l{ font-size:11px; color:var(--muted); margin-top:2px; font-weight:700; }
+  .reward-row{ display:flex; justify-content:center; gap:10px; margin-bottom:16px; }
+  .reward-chip{ background:var(--mint-bg); color:#0B4B3C; font-family:'Jua', sans-serif; font-size:13px; padding:6px 14px; border-radius:20px; }
   .reward-chip.coin{ background:var(--yellow-bg); color:#7A5300; }
 
   .result-buttons{ display:flex; gap:8px; }
-  .result-buttons button{
-    flex:1;
-    padding:14px;
-    border-radius:16px;
-    border:none;
-    font-family:'Jua', sans-serif;
-    font-size:14px;
-    cursor:pointer;
-  }
+  .result-buttons button{ flex:1; padding:14px; border-radius:16px; border:none; font-family:'Jua', sans-serif; font-size:14px; cursor:pointer; }
   .btn-primary{ background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff; box-shadow:0 4px 0 var(--pink-dk); }
   .btn-primary:active{ transform:translateY(3px); box-shadow:none; }
   .btn-ghost{ background:var(--bg1); color:var(--ink); }
   .btn-ghost:active{ transform:scale(0.97); }
 
-  .shop-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-bottom:16px;
-  }
-  .shop-item{
-    background:var(--bg1);
-    border-radius:16px;
-    padding:14px 8px;
-    text-align:center;
-    border:2px solid transparent;
-    cursor:pointer;
-  }
+  .shop-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .shop-item{ background:var(--bg1); border-radius:16px; padding:14px 8px; text-align:center; border:2px solid transparent; cursor:pointer; }
   .shop-item .ic{ font-size:28px; display:block; margin-bottom:4px; }
   .shop-item .nm{ font-family:'Jua', sans-serif; font-size:12px; color:var(--ink); }
   .shop-item .pr{ font-size:11px; color:var(--yellow-dk); font-weight:700; margin-top:2px; }
@@ -506,68 +193,27 @@
   .shop-item.equipped{ border-color:var(--pink); background:var(--pink-bg); }
   .shop-item.locked{ opacity:.55; }
 
-  .toast{
-    position:absolute;
-    top:14px; left:50%;
-    transform:translateX(-50%);
-    background:#fff;
-    padding:8px 16px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:700;
-    font-family:'Jua', sans-serif;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .2s ease, transform .2s ease;
-    z-index:20;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  }
+  .toast{ position:absolute; top:14px; left:50%; transform:translateX(-50%); background:#fff; padding:8px 16px; border-radius:20px; font-size:12px; font-weight:700; font-family:'Jua', sans-serif; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; z-index:20; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
   .toast.show{ opacity:1; transform:translateX(-50%) translateY(6px); }
   .toast.good{ color:var(--mint-dk); }
   .toast.bad{ color:var(--coral); }
 
-  .levelup-overlay{
-    position:absolute; inset:0;
-    background:rgba(255,246,251,0.96);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    z-index:30;
-    border-radius:30px;
-    text-align:center;
-    padding:20px;
-  }
+  .levelup-overlay{ position:absolute; inset:0; background:rgba(255,246,251,0.96); display:none; align-items:center; justify-content:center; flex-direction:column; z-index:30; border-radius:30px; text-align:center; padding:20px; }
   .levelup-overlay.show{ display:flex; }
   .levelup-emoji{ font-size:70px; animation: lvl-pop .6s ease; }
-  @keyframes lvl-pop{
-    0%{ transform:scale(0.3); opacity:0; } 60%{ transform:scale(1.2); opacity:1; } 100%{ transform:scale(1); }
-  }
+  @keyframes lvl-pop{ 0%{ transform:scale(0.3); opacity:0; } 60%{ transform:scale(1.2); opacity:1; } 100%{ transform:scale(1); } }
   .levelup-title{ font-family:'Jua', sans-serif; font-size:24px; color:var(--pink-dk); margin:10px 0 2px; }
   .levelup-sub{ font-size:14px; color:var(--purple-dk); font-weight:700; margin-bottom:18px; }
-  .levelup-btn{
-    background: linear-gradient(120deg, var(--pink), var(--purple));
-    color:#fff;
-    border:none;
-    padding:12px 26px;
-    border-radius:18px;
-    font-family:'Jua', sans-serif;
-    font-size:14px;
-    cursor:pointer;
-    box-shadow:0 4px 0 var(--pink-dk);
-  }
-  .confetti-piece{
-    position:absolute;
-    top:-10px;
-    width:8px; height:8px;
-    border-radius:2px;
-    animation: confetti-fall linear forwards;
-    z-index:31;
-  }
-  @keyframes confetti-fall{
-    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
-    100%{ transform:translateY(340px) rotate(400deg); opacity:0; }
-  }
+  .levelup-btn{ background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff; border:none; padding:12px 26px; border-radius:18px; font-family:'Jua', sans-serif; font-size:14px; cursor:pointer; box-shadow:0 4px 0 var(--pink-dk); }
+  .confetti-piece{ position:absolute; top:-10px; width:8px; height:8px; border-radius:2px; animation: confetti-fall linear forwards; z-index:31; }
+  @keyframes confetti-fall{ 0%{ transform:translateY(0) rotate(0deg); opacity:1; } 100%{ transform:translateY(340px) rotate(400deg); opacity:0; } }
+
+  .mic-btn{ width:84px; height:84px; border-radius:50%; border:none; background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff; font-size:34px; display:flex; align-items:center; justify-content:center; margin:6px auto 4px; cursor:pointer; box-shadow:0 5px 0 var(--pink-dk); }
+  .mic-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--pink-dk); }
+  .mic-btn.listening{ animation: mic-pulse 1s ease-in-out infinite; }
+  @keyframes mic-pulse{ 0%,100%{ box-shadow:0 5px 0 var(--pink-dk), 0 0 0 0 rgba(255,143,174,0.5); } 50%{ box-shadow:0 5px 0 var(--pink-dk), 0 0 0 14px rgba(255,143,174,0); } }
+  .mic-hint{ text-align:center; font-size:12px; color:var(--muted); font-weight:700; margin-bottom:14px; }
+  .transcript-box{ background:var(--bg1); border-radius:14px; padding:12px; text-align:center; font-size:14px; color:var(--ink); min-height:20px; margin-bottom:14px; font-weight:700; }
 </style>
 </head>
 <body>
@@ -578,47 +224,105 @@
   <div class="levelup-overlay" id="levelup-overlay">
     <div class="levelup-emoji" id="levelup-emoji">🎉</div>
     <div class="levelup-title" id="levelup-title">레벨업!</div>
-    <div class="levelup-sub" id="levelup-sub">콩콩이가 한 단계 성장했어요</div>
+    <div class="levelup-sub" id="levelup-sub">캐릭터가 한 단계 성장했어요</div>
     <button class="levelup-btn" id="levelup-btn">신난다! ✨</button>
   </div>
 
-  <div class="screen active" id="screen-home">
-    <h1>콩콩이의 단어 모험</h1>
-    <p class="sub">게임을 하면서 내 친구를 키워봐요</p>
+  <!-- 로그인 화면 -->
+  <div class="screen active" id="screen-login">
+    <h1>인찌</h1>
+    <p class="sub">로그인하고 나만의 캐릭터를 키워봐요</p>
+    <div class="login-emoji">🔐</div>
+    <div class="field">
+      <label>이메일</label>
+      <input type="email" id="login-email" placeholder="example@email.com">
+    </div>
+    <div class="field">
+      <label>비밀번호 (6자 이상)</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <div class="auth-error" id="auth-error"></div>
+    <div class="auth-buttons">
+      <button class="btn-ghost" id="signup-btn" style="flex:1;border-radius:16px;padding:13px;font-family:'Jua',sans-serif;">회원가입</button>
+      <button class="btn-primary" id="login-btn" style="flex:1;border-radius:16px;padding:13px;font-family:'Jua',sans-serif;border:none;">로그인</button>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-home">
+    <div class="top-strip"><span id="user-email-label"></span><button class="logout-btn" id="logout-btn">로그아웃</button></div>
+    <h1>인찌</h1>
+    <p class="sub">학년과 과목을 골라 캐릭터와 함께 공부해요</p>
 
     <div class="pet-card">
-      <button class="deco-btn" id="open-shop">✨ 꾸미기</button>
+      <button class="deco-btn room" id="open-room">🏠 내 방</button>
+      <button class="deco-btn shop" id="open-shop">✨ 꾸미기</button>
       <div class="pet-bubble" id="pet-bubble">오늘도 같이 공부하자!</div><br>
-      <span class="pet-emoji" id="pet-emoji">🥚</span><span class="pet-emoji acc-after" id="pet-accessory"></span>
-      <div class="pet-name" id="pet-name">콩콩 알</div>
-      <div class="pet-stats">
-        <span class="lv-badge" id="pet-level">Lv.1</span>
-        <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
-        <span class="coin-badge" id="coin-badge">🪙 0</span>
+      <div id="pet-display">
+        <span class="pet-emoji" id="pet-emoji">❓</span><span class="pet-emoji acc-after" id="pet-accessory"></span>
+        <div class="pet-name" id="pet-name">캐릭터 없음</div>
+        <div class="pet-stats" id="pet-stats-row">
+          <span class="lv-badge" id="pet-level">Lv.1</span>
+          <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+          <span class="coin-badge" id="coin-badge">🪙 0</span>
+        </div>
       </div>
+      <button class="pet-empty-btn" id="pick-character-btn" style="display:none;">이 과목 캐릭터 정하기</button>
     </div>
 
-    <div class="group-label">🌐 언어 선택</div>
-    <div class="chips" id="lang-chips">
-      <div class="chip selected" data-lang="en"><span class="big">🇬🇧</span>영어</div>
-      <div class="chip" data-lang="ja"><span class="big">🇯🇵</span>일본어</div>
+    <div class="group-label">🎒 학년 선택</div>
+    <div class="chips three" id="grade-chips">
+      <div class="chip selected" data-grade="1">1학년</div>
+      <div class="chip" data-grade="2">2학년</div>
+      <div class="chip" data-grade="3">3학년</div>
+      <div class="chip" data-grade="4">4학년</div>
+      <div class="chip" data-grade="5">5학년</div>
+      <div class="chip" data-grade="6">6학년</div>
+    </div>
+
+    <div class="group-label">📚 과목 선택</div>
+    <div class="chips four" id="subject-chips">
+      <div class="chip selected" data-subject="korean"><span class="big">📖</span>국어</div>
+      <div class="chip" data-subject="math"><span class="big">🔢</span>수학</div>
+      <div class="chip" data-subject="social"><span class="big">🌍</span>사회·도덕</div>
+      <div class="chip" data-subject="science"><span class="big">🔬</span>과학·실과</div>
+      <div class="chip" data-subject="pe"><span class="big">⚽</span>체육</div>
+      <div class="chip" data-subject="art"><span class="big">🎨</span>예술</div>
+      <div class="chip" data-subject="english"><span class="big">🇬🇧</span>영어</div>
     </div>
 
     <div class="group-label">🎮 게임 모드</div>
-    <div class="chips three" id="mode-chips">
-      <div class="chip selected" data-mode="match"><span class="big">🃏</span>카드 짝맞추기</div>
-      <div class="chip" data-mode="quiz"><span class="big">⚡</span>스피드 퀴즈</div>
-      <div class="chip" data-mode="blank"><span class="big">🔤</span>빈칸 채우기</div>
-    </div>
-
-    <div class="group-label">🌱 단계 선택</div>
-    <div class="chips three" id="level-chips">
-      <div class="chip selected" data-level="1">1단계<br><span style="color:var(--muted); font-size:11px;">쉬워요</span></div>
-      <div class="chip" data-level="2">2단계<br><span style="color:var(--muted); font-size:11px;">보통</span></div>
-      <div class="chip" data-level="3">3단계<br><span style="color:var(--muted); font-size:11px;">어려워요</span></div>
+    <div class="chips four" id="mode-chips">
+      <div class="chip selected" data-mode="match"><span class="big">🃏</span>짝맞추기</div>
+      <div class="chip" data-mode="quiz"><span class="big">⚡</span>퀴즈</div>
+      <div class="chip" data-mode="blank"><span class="big">🔤</span>빈칸</div>
+      <div class="chip" data-mode="pronounce" id="chip-pronounce" style="display:none;"><span class="big">🎤</span>발음체크</div>
     </div>
 
     <button class="start-btn" id="start-btn">게임 시작! 🚀</button>
+  </div>
+
+  <div class="screen" id="screen-character-pick">
+    <div class="topbar">
+      <button class="back-btn" id="pick-back">←</button>
+      <div class="group-label" style="margin:0;" id="pick-title">캐릭터 고르기</div>
+      <span style="width:34px;"></span>
+    </div>
+    <p class="sub" id="pick-sub">이 과목을 함께할 캐릭터를 골라주세요</p>
+    <div class="species-grid" id="species-grid"></div>
+  </div>
+
+  <div class="screen" id="screen-room">
+    <div class="topbar">
+      <button class="back-btn" id="room-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-room">🥚</span></div>
+      <span style="width:34px;"></span>
+    </div>
+    <div class="room-scene" id="room-scene">
+      <div class="room-title" id="room-title">토끼의 방</div>
+      <span class="pet-emoji" id="room-pet-emoji" style="font-size:64px;">🐰</span>
+      <div class="room-floor" id="room-floor"></div>
+    </div>
+    <div class="room-next" id="room-next"></div>
   </div>
 
   <div class="screen" id="screen-shop">
@@ -628,7 +332,7 @@
     </div>
     <div class="pet-card" style="margin-bottom:18px;">
       <span class="pet-emoji" id="shop-pet-emoji">🥚</span><span class="pet-emoji acc-after" id="shop-pet-accessory"></span>
-      <div class="pet-name" id="shop-pet-name">콩콩 알</div>
+      <div class="pet-name" id="shop-pet-name">캐릭터</div>
     </div>
     <div class="group-label">🛍️ 코인으로 꾸며주기</div>
     <div class="shop-grid" id="shop-grid"></div>
@@ -655,19 +359,16 @@
         <div class="pill">점수 <b id="quiz-score">0</b></div>
       </div>
     </div>
-
     <div class="streak-bar">
       <span class="streak-label">콤보</span>
       <div class="streak-track"><div class="streak-fill" id="streak-fill"></div></div>
       <span class="streak-num" id="streak-num">0</span>
     </div>
-
     <div class="quiz-card">
       <div class="quiz-timerbar" id="quiz-timerbar"></div>
       <div class="quiz-word" id="quiz-word">word</div>
       <div class="quiz-romaji" id="quiz-romaji"></div>
     </div>
-
     <div class="answers" id="quiz-answers"></div>
   </div>
 
@@ -680,20 +381,40 @@
         <div class="pill">점수 <b id="blank-score">0</b></div>
       </div>
     </div>
-
     <div class="streak-bar">
       <span class="streak-label">콤보</span>
       <div class="streak-track"><div class="streak-fill" id="blank-streak-fill"></div></div>
       <span class="streak-num" id="blank-streak-num">0</span>
     </div>
-
     <div class="quiz-card">
       <div class="quiz-timerbar" id="blank-timerbar"></div>
       <div class="quiz-word" id="blank-word">w_rd</div>
       <div class="quiz-romaji" id="blank-meaning"></div>
     </div>
-
     <div class="answers" id="blank-answers"></div>
+  </div>
+
+  <div class="screen" id="screen-pronounce">
+    <div class="topbar">
+      <button class="back-btn" id="pronounce-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-pronounce">🥚</span></div>
+      <div class="stat-pills">
+        <div class="pill" id="pronounce-progress">1/8</div>
+        <div class="pill">점수 <b id="pronounce-score">0</b></div>
+      </div>
+    </div>
+    <div class="streak-bar">
+      <span class="streak-label">콤보</span>
+      <div class="streak-track"><div class="streak-fill" id="pronounce-streak-fill"></div></div>
+      <span class="streak-num" id="pronounce-streak-num">0</span>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-word" id="pronounce-target">word</div>
+      <div class="quiz-romaji" id="pronounce-meaning"></div>
+    </div>
+    <button class="mic-btn" id="mic-btn">🎤</button>
+    <div class="mic-hint" id="mic-hint">버튼을 누르고 큰 소리로 읽어보세요</div>
+    <div class="transcript-box" id="transcript-box">&nbsp;</div>
   </div>
 
   <div class="screen" id="screen-result">
@@ -716,73 +437,97 @@
 <script>
 (function(){
 
-var wordBank = {
-  en: {
-    1: [
-      {w:"apple", m:"사과"},{w:"book", m:"책"},{w:"water", m:"물"},{w:"house", m:"집"},
-      {w:"dog", m:"개"},{w:"cat", m:"고양이"},{w:"sun", m:"태양"},{w:"moon", m:"달"},
-      {w:"star", m:"별"},{w:"tree", m:"나무"},{w:"flower", m:"꽃"},{w:"chair", m:"의자"},
-      {w:"table", m:"테이블"},{w:"window", m:"창문"},{w:"door", m:"문"},{w:"phone", m:"전화기"},
-      {w:"computer", m:"컴퓨터"},{w:"shoe", m:"신발"},{w:"hat", m:"모자"},{w:"bag", m:"가방"}
-    ],
-    2: [
-      {w:"mountain", m:"산"},{w:"river", m:"강"},{w:"bridge", m:"다리"},{w:"forest", m:"숲"},
-      {w:"island", m:"섬"},{w:"cloud", m:"구름"},{w:"desert", m:"사막"},{w:"ocean", m:"바다"},
-      {w:"valley", m:"계곡"},{w:"thunder", m:"천둥"},{w:"beach", m:"해변"},{w:"volcano", m:"화산"},
-      {w:"waterfall", m:"폭포"},{w:"cave", m:"동굴"},{w:"harbor", m:"항구"},{w:"meadow", m:"초원"},
-      {w:"cliff", m:"절벽"},{w:"glacier", m:"빙하"},{w:"canyon", m:"협곡"},{w:"swamp", m:"늪"}
-    ],
-    3: [
-      {w:"achieve", m:"성취하다"},{w:"hesitate", m:"망설이다"},{w:"generous", m:"관대한"},
-      {w:"ancient", m:"고대의"},{w:"fragile", m:"부서지기 쉬운"},{w:"curious", m:"호기심 많은"},
-      {w:"abundant", m:"풍부한"},{w:"reluctant", m:"꺼리는"},{w:"diligent", m:"부지런한"},
-      {w:"humble", m:"겸손한"},{w:"resilient", m:"회복력 있는"},{w:"profound", m:"심오한"},
-      {w:"ambiguous", m:"모호한"},{w:"meticulous", m:"꼼꼼한"},{w:"inevitable", m:"불가피한"},
-      {w:"eloquent", m:"웅변적인"},{w:"benevolent", m:"자비로운"},{w:"tenacious", m:"끈기있는"},
-      {w:"versatile", m:"다재다능한"},{w:"candid", m:"솔직한"}
-    ]
+/* =================== 학년별 과목 콘텐츠 =================== */
+var contentBank = {
+  korean: {
+    1:[{w:"크다",m:"작다"},{w:"덥다",m:"춥다"},{w:"길다",m:"짧다"},{w:"높다",m:"낮다"},{w:"많다",m:"적다"},{w:"무겁다",m:"가볍다"}],
+    2:[{w:"빠르다",m:"느리다"},{w:"넓다",m:"좁다"},{w:"굵다",m:"가늘다"},{w:"두껍다",m:"얇다"},{w:"단단하다",m:"무르다"},{w:"부지런하다",m:"게으르다"}],
+    3:[{w:"기쁘다",m:"즐겁다"},{w:"예쁘다",m:"아름답다"},{w:"착하다",m:"선하다"},{w:"크다",m:"거대하다"},{w:"작다",m:"조그맣다"},{w:"슬프다",m:"서럽다"}],
+    4:[{w:"일석이조",m:"한 가지 일로 두 이익"},{w:"온고지신",m:"옛것을 익혀 새것을 앎"},{w:"자업자득",m:"자기가 한 일의 결과를 받음"},{w:"유비무환",m:"미리 준비하면 걱정 없음"},{w:"백문불여일견",m:"듣기보다 보는 게 나음"},{w:"새옹지마",m:"좋고 나쁨을 알 수 없음"}],
+    5:[{w:"가는 말이 고와야 오는 말이 곱다",m:"내가 잘해야 남도 잘한다"},{w:"하늘이 무너져도 솟아날 구멍이 있다",m:"아무리 어려워도 해결책은 있다"},{w:"티끌 모아 태산",m:"작은 것도 모이면 커진다"},{w:"우물 안 개구리",m:"세상 물정을 모름"},{w:"발 없는 말이 천 리 간다",m:"소문은 빨리 퍼진다"},{w:"등잔 밑이 어둡다",m:"가까운 것을 오히려 모름"}],
+    6:[{w:"협동",m:"힘을 합침"},{w:"배려",m:"남을 위하는 마음"},{w:"존중",m:"높이어 귀하게 대함"},{w:"성찰",m:"자신을 돌아봄"},{w:"책임감",m:"맡은 일을 다함"},{w:"창의성",m:"새로운 것을 생각해내는 능력"}]
   },
-  ja: {
-    1: [
-      {w:"りんご", r:"ringo", m:"사과"},{w:"ほん", r:"hon", m:"책"},{w:"みず", r:"mizu", m:"물"},
-      {w:"いえ", r:"ie", m:"집"},{w:"いぬ", r:"inu", m:"개"},{w:"ねこ", r:"neko", m:"고양이"},
-      {w:"たいよう", r:"taiyou", m:"태양"},{w:"つき", r:"tsuki", m:"달"},{w:"ほし", r:"hoshi", m:"별"},
-      {w:"き", r:"ki", m:"나무"},{w:"はな", r:"hana", m:"꽃"},{w:"いす", r:"isu", m:"의자"},
-      {w:"つくえ", r:"tsukue", m:"책상"},{w:"まど", r:"mado", m:"창문"},{w:"どあ", r:"doa", m:"문"},
-      {w:"でんわ", r:"denwa", m:"전화"},{w:"くつ", r:"kutsu", m:"신발"},{w:"ぼうし", r:"boushi", m:"모자"},
-      {w:"かばん", r:"kaban", m:"가방"},{w:"かさ", r:"kasa", m:"우산"}
-    ],
-    2: [
-      {w:"やま", r:"yama", m:"산"},{w:"かわ", r:"kawa", m:"강"},{w:"はし", r:"hashi", m:"다리"},
-      {w:"もり", r:"mori", m:"숲"},{w:"しま", r:"shima", m:"섬"},{w:"くも", r:"kumo", m:"구름"},
-      {w:"さばく", r:"sabaku", m:"사막"},{w:"うみ", r:"umi", m:"바다"},{w:"たに", r:"tani", m:"계곡"},
-      {w:"かみなり", r:"kaminari", m:"천둥"},{w:"はまべ", r:"hamabe", m:"해변"},{w:"かざん", r:"kazan", m:"화산"},
-      {w:"たき", r:"taki", m:"폭포"},{w:"どうくつ", r:"doukutsu", m:"동굴"},{w:"みなと", r:"minato", m:"항구"},
-      {w:"そうげん", r:"sougen", m:"초원"},{w:"がけ", r:"gake", m:"절벽"},{w:"ひょうが", r:"hyouga", m:"빙하"},
-      {w:"きょうこく", r:"kyoukoku", m:"협곡"},{w:"ぬま", r:"numa", m:"늪"}
-    ],
-    3: [
-      {w:"挑戦", r:"chousen", m:"도전"},{w:"努力", r:"doryoku", m:"노력"},{w:"経験", r:"keiken", m:"경험"},
-      {w:"成長", r:"seichou", m:"성장"},{w:"目標", r:"mokuhyou", m:"목표"},{w:"諦める", r:"akirameru", m:"포기하다"},
-      {w:"信頼", r:"shinrai", m:"신뢰"},{w:"責任", r:"sekinin", m:"책임"},{w:"成功", r:"seikou", m:"성공"},
-      {w:"失敗", r:"shippai", m:"실패"},{w:"感謝", r:"kansha", m:"감사"},{w:"挑む", r:"idomu", m:"도전하다"},
-      {w:"曖昧", r:"aimai", m:"모호한"},{w:"几帳面", r:"kichoumen", m:"꼼꼼한"},{w:"必然", r:"hitsuzen", m:"필연"},
-      {w:"雄弁", r:"yuuben", m:"웅변"},{w:"寛大", r:"kandai", m:"관대한"},{w:"忍耐強い", r:"nintaizuyoi", m:"끈기있는"},
-      {w:"多才", r:"tasai", m:"다재다능한"},{w:"率直", r:"sotchoku", m:"솔직한"}
-    ]
+  math: {
+    1:[{w:"3+4",m:"7"},{w:"5+2",m:"7"},{w:"8-3",m:"5"},{w:"6-4",m:"2"},{w:"2+2",m:"4"},{w:"9-5",m:"4"}],
+    2:[{w:"12+7",m:"19"},{w:"15-6",m:"9"},{w:"4×2",m:"8"},{w:"20-8",m:"12"},{w:"13+9",m:"22"},{w:"3×3",m:"9"}],
+    3:[{w:"24×3",m:"72"},{w:"144÷12",m:"12"},{w:"7×8",m:"56"},{w:"100-37",m:"63"},{w:"9×9",m:"81"},{w:"64÷8",m:"8"}],
+    4:[{w:"1/2+1/4",m:"3/4"},{w:"0.5+0.3",m:"0.8"},{w:"삼각형 내각의 합",m:"180도"},{w:"사각형 내각의 합",m:"360도"},{w:"1km",m:"1000m"},{w:"1시간",m:"60분"}],
+    5:[{w:"12의 약수 개수",m:"6개"},{w:"12와 18의 최대공약수",m:"6"},{w:"4와 6의 최소공배수",m:"12"},{w:"원의 넓이 공식",m:"반지름×반지름×3.14"},{w:"직육면체 면의 개수",m:"6개"},{w:"삼각형 넓이 공식",m:"밑변×높이÷2"}],
+    6:[{w:"3:4를 소수로",m:"0.75"},{w:"원기둥 밑면의 모양",m:"원"},{w:"각기둥 옆면의 모양",m:"직사각형"},{w:"속력×시간",m:"거리"},{w:"원주율",m:"3.14"},{w:"사각뿔의 꼭짓점 개수",m:"5개"}]
+  },
+  social: {
+    1:[{w:"가족 구성원을 부르는 말",m:"가족"},{w:"학교에서 지켜야 할 예절",m:"인사하기"},{w:"신호등 빨간불의 의미",m:"멈춤"},{w:"친구와 사이좋게 지내는 마음",m:"우정"},{w:"내가 사는 나라 이름",m:"대한민국"},{w:"우리나라 수도",m:"서울"}],
+    2:[{w:"동네에서 도움을 주는 사람",m:"경찰관"},{w:"계절의 개수",m:"4개"},{w:"대한민국 국기 이름",m:"태극기"},{w:"대한민국 화폐 단위",m:"원"},{w:"우리나라 대표 명절",m:"설날"},{w:"이웃과 나누는 마음",m:"배려"}],
+    3:[{w:"한글을 만든 왕",m:"세종대왕"},{w:"삼국시대 세 나라",m:"고구려·백제·신라"},{w:"우리나라 국경일 중 하나",m:"광복절"},{w:"지도에서 위쪽 방위",m:"북쪽"},{w:"우리나라 동쪽 바다",m:"동해"},{w:"법을 만드는 국가기관",m:"국회"}],
+    4:[{w:"우리나라가 속한 대륙",m:"아시아"},{w:"민주주의 기본 원리",m:"다수결"},{w:"국가 최고의 법",m:"헌법"},{w:"지방자치단체 대표를 뽑는 것",m:"선거"},{w:"세계 4대 문명 중 하나",m:"황하 문명"},{w:"환경을 보호하는 행동",m:"분리수거"}],
+    5:[{w:"대한민국 임시정부 수립 연도",m:"1919년"},{w:"6·25전쟁이 일어난 해",m:"1950년"},{w:"국회의원을 뽑는 선거",m:"총선"},{w:"세계 여러 나라의 국제기구",m:"UN"},{w:"인권을 존중하는 태도",m:"인권존중"},{w:"다른 문화를 이해하는 태도",m:"문화다양성"}],
+    6:[{w:"법을 만드는 기관",m:"입법부"},{w:"법을 집행하는 기관",m:"행정부"},{w:"법을 판단하는 기관",m:"사법부"},{w:"대한민국 정부수립 연도",m:"1948년"},{w:"지구촌 문제 중 하나",m:"기후변화"},{w:"나라 간 물건을 사고파는 것",m:"무역"}]
+  },
+  science: {
+    1:[{w:"식물이 자라는 데 필요한 것",m:"물"},{w:"낮과 밤이 바뀌는 이유",m:"지구 자전"},{w:"우리 몸에서 생각하는 기관",m:"뇌"},{w:"물이 얼면 되는 것",m:"얼음"},{w:"알을 낳는 동물",m:"새"},{w:"식물 뿌리가 하는 일",m:"물 흡수"}],
+    2:[{w:"자석이 붙는 금속",m:"철"},{w:"무지개의 색깔 수",m:"7가지"},{w:"하루는 몇 시간",m:"24시간"},{w:"계절이 바뀌는 이유",m:"지구 공전"},{w:"소리를 듣는 기관",m:"귀"},{w:"빛을 반사하는 물건",m:"거울"}],
+    3:[{w:"물의 세 가지 상태",m:"고체·액체·기체"},{w:"잎이 빛으로 양분을 만드는 것",m:"광합성"},{w:"자석의 두 극",m:"N극·S극"},{w:"소리를 전달하는 것",m:"공기"},{w:"온도를 재는 도구",m:"온도계"},{w:"생물이 사는 지구의 층",m:"생물권"}],
+    4:[{w:"물체 무게를 재는 도구",m:"저울"},{w:"지층이 쌓여 만들어진 암석",m:"퇴적암"},{w:"화산 활동으로 만들어진 암석",m:"화성암"},{w:"그림자가 생기는 이유",m:"빛의 직진"},{w:"전기가 흐르는 길",m:"전기회로"},{w:"식물의 번식 방법 중 하나",m:"씨앗"}],
+    5:[{w:"태양계에서 가장 큰 행성",m:"목성"},{w:"우리가 사는 행성",m:"지구"},{w:"달이 지구 주위를 도는 것",m:"공전"},{w:"산소로 에너지를 얻는 과정",m:"호흡"},{w:"지진이 발생하는 원인",m:"지각변동"},{w:"용액의 성질을 나타내는 수치",m:"pH"}],
+    6:[{w:"혈액을 순환시키는 기관",m:"심장"},{w:"유전 정보를 담고 있는 것",m:"DNA"},{w:"빛을 모으는 도구",m:"볼록렌즈"},{w:"연소에 필요한 요소",m:"산소"},{w:"생태계의 생산자",m:"식물"},{w:"에너지 보존 법칙",m:"보존된다"}]
+  },
+  pe: {
+    1:[{w:"줄넘기 착지 부위",m:"앞꿈치"},{w:"달리기 전에 하는 것",m:"준비운동"},{w:"공을 던지고 받는 운동",m:"캐치볼"},{w:"균형 잡는 운동",m:"한발서기"},{w:"걷기보다 빠른 것",m:"달리기"},{w:"체육 시간에 입는 옷",m:"체육복"}],
+    2:[{w:"축구에서 골 넣는 곳",m:"골대"},{w:"매트 위에서 구르는 동작",m:"구르기"},{w:"리듬에 맞춰 움직이는 것",m:"율동"},{w:"물에 뜨는 수영 자세",m:"배영"},{w:"여러 명이 하는 줄 운동",m:"줄다리기"},{w:"농구공을 넣는 곳",m:"골대"}],
+    3:[{w:"배드민턴을 칠 때 쓰는 도구",m:"라켓"},{w:"피구에서 공에 맞으면",m:"아웃"},{w:"철봉에 매달리는 운동",m:"턱걸이"},{w:"운동 후 몸을 식히는 것",m:"정리운동"},{w:"심장이 뛰는 것을 재는 것",m:"맥박"},{w:"농구에서 공을 튀기는 동작",m:"드리블"}],
+    4:[{w:"배구에서 공을 넘기는 도구",m:"네트"},{w:"마라톤의 거리",m:"약 42km"},{w:"태권도의 발 기술",m:"발차기"},{w:"운동 전 스트레칭 이유",m:"부상예방"},{w:"심폐지구력을 기르는 운동",m:"오래달리기"},{w:"축구에서 손을 못 쓰는 선수",m:"필드플레이어"}],
+    5:[{w:"팀 스포츠에서 중요한 정신",m:"협동심"},{w:"야구에서 3번 놓치면",m:"삼진아웃"},{w:"배구 한 팀 선수 수",m:"6명"},{w:"농구 한 팀 선수 수",m:"5명"},{w:"규칙을 지키는 태도",m:"스포츠맨십"},{w:"유연성을 기르는 활동",m:"스트레칭"}],
+    6:[{w:"올림픽이 열리는 주기",m:"4년"},{w:"정정당당한 태도",m:"페어플레이"},{w:"지구력을 기르는 대표 운동",m:"마라톤"},{w:"근력을 기르는 운동",m:"근력운동"},{w:"심박수를 재는 이유",m:"건강확인"},{w:"체력 요소 중 하나",m:"순발력"}]
+  },
+  art: {
+    1:[{w:"빨강과 노랑을 섞으면",m:"주황"},{w:"파랑과 노랑을 섞으면",m:"초록"},{w:"소리의 크고 작음",m:"셈여림"},{w:"그림 그리는 도구",m:"크레파스"},{w:"물감 칠할 때 쓰는 도구",m:"붓"},{w:"색의 삼원색",m:"빨강·파랑·노랑"}],
+    2:[{w:"빠르고 느림을 나타내는 말",m:"빠르기"},{w:"색종이를 오려 붙이는 기법",m:"콜라주"},{w:"여러 악기가 함께 연주",m:"합주"},{w:"그림자를 표현하는 기법",m:"명암"},{w:"다 같이 부르는 노래",m:"합창"},{w:"리듬악기의 예",m:"탬버린"}],
+    3:[{w:"오선지에 그리는 것",m:"음표"},{w:"우리나라 전통 악기",m:"가야금"},{w:"원근감을 표현하는 기법",m:"원근법"},{w:"음악에서 높고 낮음",m:"음높이"},{w:"찰흙으로 만드는 작품",m:"조소"},{w:"두 색을 섞어 만든 색",m:"혼합색"}],
+    4:[{w:"우리나라 전통 음악",m:"국악"},{w:"물감을 물에 풀어 그리는 기법",m:"수채화"},{w:"선과 면으로 표현하는 것",m:"구도"},{w:"판소리에서 이야기를 이끄는 사람",m:"소리꾼"},{w:"음악의 3요소 중 하나",m:"리듬"},{w:"여러 음을 함께 부르는 것",m:"화음"}],
+    5:[{w:"도레미파솔라시를 부르는 방법",m:"계이름"},{w:"명암으로 입체감을 주는 것",m:"음영"},{w:"여러 악기로 이루어진 합주단",m:"오케스트라"},{w:"있는 그대로 그리는 미술",m:"사실주의"},{w:"전통 무용 중 하나",m:"탈춤"},{w:"음악을 기록하는 기호",m:"악보"}],
+    6:[{w:"서양 음악의 한 시대",m:"고전주의"},{w:"미술 사조 중 하나",m:"인상주의"},{w:"화음을 이루는 음악 요소",m:"화성"},{w:"한 주제를 반복하는 음악 형식",m:"변주곡"},{w:"작품을 감상하는 태도",m:"존중"},{w:"곡을 만드는 사람",m:"작곡가"}]
+  },
+  english: {
+    1:[{w:"cat",m:"고양이"},{w:"dog",m:"개"},{w:"sun",m:"해"},{w:"cup",m:"컵"},{w:"hat",m:"모자"},{w:"bed",m:"침대"},{w:"pig",m:"돼지"},{w:"cow",m:"소"},{w:"box",m:"상자"},{w:"egg",m:"달걀"},{w:"fan",m:"부채"},{w:"jam",m:"잼"}],
+    2:[{w:"apple",m:"사과"},{w:"book",m:"책"},{w:"water",m:"물"},{w:"house",m:"집"},{w:"chair",m:"의자"},{w:"table",m:"테이블"},{w:"flower",m:"꽃"},{w:"window",m:"창문"},{w:"bridge",m:"다리"},{w:"forest",m:"숲"},{w:"cloud",m:"구름"},{w:"garden",m:"정원"}],
+    3:[{w:"mountain",m:"산"},{w:"river",m:"강"},{w:"island",m:"섬"},{w:"desert",m:"사막"},{w:"ocean",m:"바다"},{w:"valley",m:"계곡"},{w:"thunder",m:"천둥"},{w:"harbor",m:"항구"},{w:"meadow",m:"초원"},{w:"cliff",m:"절벽"},{w:"canyon",m:"협곡"},{w:"beach",m:"해변"}],
+    4:[{w:"happy",m:"행복한"},{w:"careful",m:"조심스러운"},{w:"honest",m:"정직한"},{w:"brave",m:"용감한"},{w:"kind",m:"친절한"},{w:"polite",m:"예의바른"},{w:"curious",m:"호기심 많은"},{w:"active",m:"활발한"},{w:"gentle",m:"온화한"},{w:"clever",m:"영리한"},{w:"patient",m:"참을성 있는"},{w:"cheerful",m:"명랑한"}],
+    5:[{w:"achieve",m:"성취하다"},{w:"generous",m:"관대한"},{w:"ancient",m:"고대의"},{w:"fragile",m:"부서지기 쉬운"},{w:"abundant",m:"풍부한"},{w:"diligent",m:"부지런한"},{w:"humble",m:"겸손한"},{w:"resilient",m:"회복력 있는"},{w:"profound",m:"심오한"},{w:"ambiguous",m:"모호한"},{w:"tenacious",m:"끈기있는"},{w:"versatile",m:"다재다능한"}],
+    6:[{w:"inevitable",m:"불가피한"},{w:"eloquent",m:"웅변적인"},{w:"benevolent",m:"자비로운"},{w:"meticulous",m:"꼼꼼한"},{w:"candid",m:"솔직한"},{w:"hesitate",m:"망설이다"},{w:"reluctant",m:"꺼리는"},{w:"analyze",m:"분석하다"},{w:"conclude",m:"결론짓다"},{w:"evaluate",m:"평가하다"},{w:"summarize",m:"요약하다"},{w:"hypothesis",m:"가설"}]
   }
 };
 
-var state = { lang:"en", mode:"match", level:1 };
+var englishSentences = {
+  5:[
+    {s:"I want to ___ my dream.", w:"achieve", m:"나는 내 꿈을 이루고 싶어요."},
+    {s:"She is very ___ to poor people.", w:"generous", m:"그녀는 가난한 사람들에게 매우 관대해요."},
+    {s:"This vase is very ___.", w:"fragile", m:"이 꽃병은 아주 깨지기 쉬워요."},
+    {s:"He is a ___ student.", w:"diligent", m:"그는 부지런한 학생이에요."},
+    {s:"Please stay ___ about your mistakes.", w:"humble", m:"실수에 대해 겸손한 자세를 유지하세요."},
+    {s:"The book has a ___ meaning.", w:"profound", m:"그 책은 심오한 의미를 담고 있어요."}
+  ],
+  6:[
+    {s:"Change is ___ in life.", w:"inevitable", m:"삶에서 변화는 피할 수 없어요."},
+    {s:"The speaker was very ___.", w:"eloquent", m:"그 연설자는 아주 웅변적이었어요."},
+    {s:"He gave a ___ answer.", w:"candid", m:"그는 솔직한 대답을 했어요."},
+    {s:"Don't ___ to ask for help.", w:"hesitate", m:"도움을 청하는 걸 망설이지 마세요."},
+    {s:"We need to ___ the data.", w:"analyze", m:"우리는 자료를 분석해야 해요."},
+    {s:"Please ___ the story in one sentence.", w:"summarize", m:"그 이야기를 한 문장으로 요약해보세요."}
+  ]
+};
 
-var stages = [
-  {emoji:"🥚", name:"콩콩 알"},
-  {emoji:"🐣", name:"삐약이"},
-  {emoji:"🐥", name:"방글이"},
-  {emoji:"🦊", name:"여우 콩콩이"},
-  {emoji:"🦄", name:"반짝이 콩콩이"},
-  {emoji:"🐉", name:"레인보우 콩콩이"}
+var subjectLabels = { korean:"국어", math:"수학", social:"사회·도덕", science:"과학·실과", pe:"체육", art:"예술", english:"영어" };
+var subjectRoomColor = { korean:"linear-gradient(160deg,#FFE3EE,#FFF3FA)", math:"linear-gradient(160deg,#E3F0FF,#F5FAFF)", social:"linear-gradient(160deg,#E9F9E9,#F5FFF5)", science:"linear-gradient(160deg,#F1E9FF,#F8F3FF)", pe:"linear-gradient(160deg,#FFF3D9,#FFFAEF)", art:"linear-gradient(160deg,#FFE8E3,#FFF5F2)", english:"linear-gradient(160deg,#E3FBF3,#F0FFF9)" };
+
+var speciesList = [
+  {id:"rabbit", emoji:"🐰", nm:"토끼"},
+  {id:"cat", emoji:"🐱", nm:"고양이"},
+  {id:"dog", emoji:"🐶", nm:"강아지"},
+  {id:"fox", emoji:"🦊", nm:"여우"},
+  {id:"bear", emoji:"🐻", nm:"곰"},
+  {id:"unicorn", emoji:"🦄", nm:"유니콘"}
 ];
+function speciesById(id){ return speciesList.filter(function(s){ return s.id===id; })[0] || speciesList[0]; }
 
 var accessories = [
   {id:"ribbon", ic:"🎀", nm:"리본", price:20},
@@ -793,30 +538,26 @@ var accessories = [
   {id:"star", ic:"⭐", nm:"별 스티커", price:15}
 ];
 
-var player = { level:1, xp:0, coins:0, owned:[], equipped:null };
+var furnitureSteps = [
+  {lv:1, ic:"🛏️"}, {lv:3, ic:"📚"}, {lv:5, ic:"🪴"}, {lv:7, ic:"🖼️"}, {lv:9, ic:"🏆"}, {lv:12, ic:"🎁"}
+];
+function unlockedFurniture(level){ return furnitureSteps.filter(function(f){ return level>=f.lv; }).map(function(f){ return f.ic; }); }
+function nextFurnitureLv(level){ var next = furnitureSteps.filter(function(f){ return level<f.lv; })[0]; return next ? next.lv : null; }
 
-var SAVE_KEY = "kongkong_save_v1";
-function savePlayer(){
-  try{
-    localStorage.setItem(SAVE_KEY, JSON.stringify(player));
-  }catch(e){ /* storage unavailable, ignore */ }
+function stageTitle(level){
+  if(level<=2) return "아기";
+  if(level<=5) return "어린이";
+  if(level<=8) return "청소년";
+  if(level<=11) return "어른";
+  return "마스터";
 }
-function loadPlayer(){
-  try{
-    var raw = localStorage.getItem(SAVE_KEY);
-    if(raw){
-      var saved = JSON.parse(raw);
-      player.level = saved.level || 1;
-      player.xp = saved.xp || 0;
-      player.coins = saved.coins || 0;
-      player.owned = saved.owned || [];
-      player.equipped = saved.equipped || null;
-    }
-  }catch(e){ /* storage unavailable or corrupt, start fresh */ }
-}
+
+var state = { grade:1, subject:"korean", mode:"match" };
+var currentUser = null;
+var userData = { coins:0, characters:{} };
+var pendingCharacterCallback = null;
 
 function xpNeeded(level){ return 80 + (level-1)*25; }
-function currentStageIndex(){ return Math.min(stages.length-1, Math.floor((player.level-1)/3)); }
 
 function $(id){ return document.getElementById(id); }
 function showScreen(id){
@@ -837,7 +578,6 @@ function toast(msg, good){
   t.className = "toast show " + (good ? "good" : "bad");
   setTimeout(function(){ t.className = "toast"; }, 900);
 }
-
 function reactCharacter(good){
   document.querySelectorAll(".screen.active .mini-avatar").forEach(function(el){
     el.classList.remove("bounce","shake");
@@ -846,60 +586,146 @@ function reactCharacter(good){
   });
 }
 
-function accessoryEmoji(){
-  if(!player.equipped) return "";
-  var found = accessories.filter(function(a){ return a.id === player.equipped; })[0];
-  return found ? found.ic : "";
+/* ---------------- Firebase 연동 ---------------- */
+var auth = null, db = null;
+try{
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  try{ db.enablePersistence().catch(function(){}); }catch(e){}
+}catch(e){
+  console.error("Firebase 초기화 실패", e);
 }
 
-function renderPet(){
-  var idx = currentStageIndex();
-  var stage = stages[idx];
-  var accEmoji = accessoryEmoji();
+function friendlyAuthError(err){
+  var map = {
+    "auth/wrong-password":"비밀번호가 틀렸어요",
+    "auth/user-not-found":"가입되지 않은 이메일이에요",
+    "auth/email-already-in-use":"이미 가입된 이메일이에요",
+    "auth/weak-password":"비밀번호는 6자 이상이어야 해요",
+    "auth/invalid-email":"이메일 형식이 올바르지 않아요",
+    "auth/invalid-credential":"이메일 또는 비밀번호가 올바르지 않아요"
+  };
+  return map[err.code] || err.message;
+}
 
-  $("pet-emoji").textContent = stage.emoji;
-  $("pet-accessory").textContent = accEmoji;
-  $("pet-name").textContent = stage.name;
-  $("pet-level").textContent = "Lv." + player.level;
-  $("coin-badge").textContent = "🪙 " + player.coins;
-  $("xp-fill").style.width = Math.round((player.xp / xpNeeded(player.level)) * 100) + "%";
+$("login-btn").addEventListener("click", function(){
+  var email = $("login-email").value.trim();
+  var pw = $("login-password").value;
+  $("auth-error").textContent = "";
+  if(!auth){ $("auth-error").textContent = "Firebase 설정이 안 되어 있어요. firebase-config.js를 확인해주세요."; return; }
+  auth.signInWithEmailAndPassword(email, pw).catch(function(err){
+    $("auth-error").textContent = friendlyAuthError(err);
+  });
+});
+$("signup-btn").addEventListener("click", function(){
+  var email = $("login-email").value.trim();
+  var pw = $("login-password").value;
+  $("auth-error").textContent = "";
+  if(!auth){ $("auth-error").textContent = "Firebase 설정이 안 되어 있어요. firebase-config.js를 확인해주세요."; return; }
+  auth.createUserWithEmailAndPassword(email, pw).catch(function(err){
+    $("auth-error").textContent = friendlyAuthError(err);
+  });
+});
+$("logout-btn").addEventListener("click", function(){
+  if(auth) auth.signOut();
+});
 
-  $("shop-pet-emoji").textContent = stage.emoji;
-  $("shop-pet-accessory").textContent = accEmoji;
-  $("shop-pet-name").textContent = stage.name;
-  $("shop-coins").textContent = player.coins;
+function loadUserData(cb){
+  if(!db || !currentUser){ if(cb) cb(); return; }
+  db.collection("users").doc(currentUser.uid).get().then(function(doc){
+    if(doc.exists){
+      var data = doc.data();
+      userData.coins = typeof data.coins === "number" ? data.coins : 0;
+      userData.characters = data.characters || {};
+    } else {
+      userData = { coins:0, characters:{} };
+      db.collection("users").doc(currentUser.uid).set(userData);
+    }
+    if(cb) cb();
+  }).catch(function(){
+    toast("데이터를 불러오지 못했어요", false);
+    if(cb) cb();
+  });
+}
+function saveUserData(){
+  if(!db || !currentUser) return;
+  db.collection("users").doc(currentUser.uid).set(userData, {merge:true}).catch(function(){});
+}
 
-  document.querySelectorAll(".mini-avatar").forEach(function(el){
-    el.textContent = stage.emoji;
+if(auth){
+  auth.onAuthStateChanged(function(user){
+    if(user){
+      currentUser = user;
+      $("user-email-label").textContent = user.email || "";
+      loadUserData(function(){
+        showScreen("screen-home");
+        renderPet();
+      });
+    } else {
+      currentUser = null;
+      showScreen("screen-login");
+    }
   });
 }
 
-function addRewards(xpGain, coinGain, cb){
-  player.coins += coinGain;
-  player.xp += xpGain;
+/* ---------------- 캐릭터 렌더 ---------------- */
+function currentChar(){ return userData.characters[state.subject]; }
+
+function renderPet(){
+  var ch = currentChar();
+  $("coin-badge").textContent = "🪙 " + userData.coins;
+
+  if(!ch){
+    $("pet-emoji").textContent = "❓";
+    $("pet-accessory").textContent = "";
+    $("pet-name").textContent = subjectLabels[state.subject] + " 캐릭터 없음";
+    $("pet-stats-row").style.display = "none";
+    $("pick-character-btn").style.display = "inline-block";
+    $("start-btn").disabled = true;
+    document.querySelectorAll(".mini-avatar").forEach(function(el){ el.textContent = "❓"; });
+    return;
+  }
+  $("pet-stats-row").style.display = "flex";
+  $("pick-character-btn").style.display = "none";
+  $("start-btn").disabled = false;
+
+  var sp = speciesById(ch.species);
+  var accEmoji = "";
+  if(ch.equipped){
+    var found = accessories.filter(function(a){ return a.id===ch.equipped; })[0];
+    accEmoji = found ? found.ic : "";
+  }
+  $("pet-emoji").textContent = sp.emoji;
+  $("pet-accessory").textContent = accEmoji;
+  $("pet-name").textContent = stageTitle(ch.level) + " " + sp.nm + " · " + subjectLabels[state.subject];
+  $("pet-level").textContent = "Lv." + ch.level;
+  $("xp-fill").style.width = Math.round((ch.xp / xpNeeded(ch.level)) * 100) + "%";
+
+  document.querySelectorAll(".mini-avatar").forEach(function(el){ el.textContent = sp.emoji; });
+}
+
+function addRewards(xpGain, coinGain){
+  var ch = currentChar();
+  if(!ch) return;
+  userData.coins += coinGain;
+  ch.xp += xpGain;
   var leveledUp = false;
-  var oldStage = currentStageIndex();
-  while(player.xp >= xpNeeded(player.level)){
-    player.xp -= xpNeeded(player.level);
-    player.level++;
+  while(ch.xp >= xpNeeded(ch.level)){
+    ch.xp -= xpNeeded(ch.level);
+    ch.level++;
     leveledUp = true;
   }
   renderPet();
-  savePlayer();
+  saveUserData();
   if(leveledUp){
-    var newStage = currentStageIndex();
-    showLevelUp(newStage > oldStage);
+    var sp = speciesById(ch.species);
+    $("levelup-emoji").textContent = sp.emoji;
+    $("levelup-title").textContent = "레벨업!";
+    $("levelup-sub").textContent = stageTitle(ch.level) + " " + sp.nm + "(으)로 성장했어요! Lv." + ch.level;
+    spawnConfetti();
+    $("levelup-overlay").classList.add("show");
   }
-  if(cb) cb();
-}
-
-function showLevelUp(evolved){
-  var stage = stages[currentStageIndex()];
-  $("levelup-emoji").textContent = evolved ? stage.emoji : "🎉";
-  $("levelup-title").textContent = evolved ? "진화했어요!" : "레벨업!";
-  $("levelup-sub").textContent = evolved ? (stage.name + "(으)로 성장했어요!") : ("Lv." + player.level + "이 되었어요!");
-  spawnConfetti();
-  $("levelup-overlay").classList.add("show");
 }
 
 function spawnConfetti(){
@@ -916,16 +742,79 @@ function spawnConfetti(){
     (function(el){ setTimeout(function(){ el.remove(); }, 2200); })(p);
   }
 }
+$("levelup-btn").addEventListener("click", function(){ $("levelup-overlay").classList.remove("show"); });
 
-$("levelup-btn").addEventListener("click", function(){
-  $("levelup-overlay").classList.remove("show");
+/* ---------------- 캐릭터 고르기 화면 ---------------- */
+function openCharacterPick(){
+  $("pick-title").textContent = subjectLabels[state.subject] + " 캐릭터 고르기";
+  $("pick-sub").textContent = "이 과목을 함께할 캐릭터를 골라주세요";
+  var grid = $("species-grid");
+  grid.innerHTML = "";
+  speciesList.forEach(function(sp){
+    var item = document.createElement("div");
+    item.className = "species-item";
+    item.innerHTML = '<span class="ic">'+sp.emoji+'</span><span class="nm">'+sp.nm+'</span>';
+    item.addEventListener("click", function(){
+      userData.characters[state.subject] = { species: sp.id, level:1, xp:0, owned:[], equipped:null };
+      saveUserData();
+      renderPet();
+      showScreen("screen-home");
+      if(pendingCharacterCallback){ var cb = pendingCharacterCallback; pendingCharacterCallback = null; cb(); }
+    });
+    grid.appendChild(item);
+  });
+  showScreen("screen-character-pick");
+}
+$("pick-character-btn").addEventListener("click", function(){ openCharacterPick(); });
+$("pick-back").addEventListener("click", function(){ pendingCharacterCallback = null; showScreen("screen-home"); });
+
+/* ---------------- 내 방 화면 ---------------- */
+$("open-room").addEventListener("click", function(){
+  var ch = currentChar();
+  if(!ch){ toast("먼저 캐릭터를 골라주세요", false); return; }
+  var sp = speciesById(ch.species);
+  $("room-scene").style.background = subjectRoomColor[state.subject];
+  $("room-title").textContent = stageTitle(ch.level) + " " + sp.nm + "의 방";
+  $("room-pet-emoji").textContent = sp.emoji;
+  var floor = $("room-floor");
+  floor.innerHTML = "";
+  unlockedFurniture(ch.level).forEach(function(ic){
+    var span = document.createElement("span");
+    span.textContent = ic;
+    floor.appendChild(span);
+  });
+  var nextLv = nextFurnitureLv(ch.level);
+  $("room-next").textContent = nextLv ? ("다음 가구는 Lv." + nextLv + "에 열려요 (지금 Lv." + ch.level + ")") : "방이 가구로 가득 찼어요! ✨";
+  document.querySelectorAll(".mini-avatar").forEach(function(el){ el.textContent = sp.emoji; });
+  showScreen("screen-room");
 });
+$("room-back").addEventListener("click", function(){ showScreen("screen-home"); });
 
-document.querySelectorAll("#lang-chips .chip").forEach(function(c){
+/* ---------------- 홈 화면 선택 ---------------- */
+document.querySelectorAll("#grade-chips .chip").forEach(function(c){
   c.addEventListener("click", function(){
-    document.querySelectorAll("#lang-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+    document.querySelectorAll("#grade-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
     c.classList.add("selected");
-    state.lang = c.dataset.lang;
+    state.grade = parseInt(c.dataset.grade, 10);
+  });
+});
+document.querySelectorAll("#subject-chips .chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    document.querySelectorAll("#subject-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+    c.classList.add("selected");
+    state.subject = c.dataset.subject;
+    var pronounceChip = $("chip-pronounce");
+    if(state.subject === "english"){
+      pronounceChip.style.display = "";
+    } else {
+      pronounceChip.style.display = "none";
+      if(state.mode === "pronounce"){
+        state.mode = "match";
+        document.querySelectorAll("#mode-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+        document.querySelector('#mode-chips .chip[data-mode="match"]').classList.add("selected");
+      }
+    }
+    renderPet();
   });
 });
 document.querySelectorAll("#mode-chips .chip").forEach(function(c){
@@ -935,46 +824,56 @@ document.querySelectorAll("#mode-chips .chip").forEach(function(c){
     state.mode = c.dataset.mode;
   });
 });
-document.querySelectorAll("#level-chips .chip").forEach(function(c){
-  c.addEventListener("click", function(){
-    document.querySelectorAll("#level-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
-    c.classList.add("selected");
-    state.level = parseInt(c.dataset.level, 10);
-  });
-});
 
-$("start-btn").addEventListener("click", function(){
+function launchGame(){
   if(state.mode === "match"){ startMatch(); }
   else if(state.mode === "quiz"){ startQuiz(); }
-  else { startBlank(); }
+  else if(state.mode === "blank"){ startBlank(); }
+  else { startPronounce(); }
+}
+$("start-btn").addEventListener("click", function(){
+  if(!currentChar()){
+    pendingCharacterCallback = launchGame;
+    openCharacterPick();
+    return;
+  }
+  launchGame();
 });
 
-$("open-shop").addEventListener("click", function(){ renderShop(); showScreen("screen-shop"); });
+/* ---------------- 상점 ---------------- */
+$("open-shop").addEventListener("click", function(){
+  if(!currentChar()){ toast("먼저 캐릭터를 골라주세요", false); return; }
+  renderShop();
+  showScreen("screen-shop");
+});
 $("shop-back").addEventListener("click", function(){ showScreen("screen-home"); });
 
 function renderShop(){
+  var ch = currentChar();
+  var sp = speciesById(ch.species);
+  $("shop-pet-emoji").textContent = sp.emoji;
+  $("shop-pet-accessory").textContent = ch.equipped ? (accessories.filter(function(a){return a.id===ch.equipped;})[0]||{}).ic || "" : "";
+  $("shop-pet-name").textContent = stageTitle(ch.level) + " " + sp.nm;
+  $("shop-coins").textContent = userData.coins;
+
   var grid = $("shop-grid");
   grid.innerHTML = "";
   accessories.forEach(function(a){
-    var owned = player.owned.indexOf(a.id) !== -1;
-    var equipped = player.equipped === a.id;
+    var owned = ch.owned.indexOf(a.id) !== -1;
+    var equipped = ch.equipped === a.id;
     var item = document.createElement("div");
-    item.className = "shop-item" + (owned ? " owned" : "") + (equipped ? " equipped" : "") + (!owned && player.coins < a.price ? " locked" : "");
+    item.className = "shop-item" + (owned ? " owned" : "") + (equipped ? " equipped" : "") + (!owned && userData.coins < a.price ? " locked" : "");
     item.innerHTML = '<span class="ic">'+a.ic+'</span><span class="nm">'+a.nm+'</span><span class="pr">'+(owned ? (equipped ? "착용중" : "탭해서 착용") : ("🪙 "+a.price))+'</span>';
     item.addEventListener("click", function(){
       if(owned){
-        player.equipped = equipped ? null : a.id;
-        renderPet();
-        savePlayer();
-        renderShop();
-      } else if(player.coins >= a.price){
-        player.coins -= a.price;
-        player.owned.push(a.id);
-        player.equipped = a.id;
+        ch.equipped = equipped ? null : a.id;
+        renderPet(); saveUserData(); renderShop();
+      } else if(userData.coins >= a.price){
+        userData.coins -= a.price;
+        ch.owned.push(a.id);
+        ch.equipped = a.id;
         toast(a.nm + " 획득!", true);
-        renderPet();
-        savePlayer();
-        renderShop();
+        renderPet(); saveUserData(); renderShop();
       } else {
         toast("코인이 부족해요", false);
       }
@@ -983,25 +882,22 @@ function renderShop(){
   });
 }
 
+function sessionLabel(){ return state.grade + "학년 · " + subjectLabels[state.subject]; }
+
+/* ---------------- 카드 짝맞추기 ---------------- */
 var mg = { tiles:[], flipped:[], matched:0, total:0, moves:0, timer:null, seconds:0, lock:false };
 
 function startMatch(){
-  var deck = wordBank[state.lang][state.level];
-  var pairCount = state.level===1?8:(state.level===2?10:12);
+  var deck = contentBank[state.subject][state.grade];
+  var pairCount = Math.min(deck.length, state.subject==="english" ? (state.grade<=2?6:(state.grade<=4?8:10)) : 6);
   var chosen = shuffle(deck).slice(0, pairCount);
 
-  mg.tiles = [];
-  mg.flipped = [];
-  mg.matched = 0;
-  mg.total = chosen.length;
-  mg.moves = 0;
-  mg.seconds = 0;
-  mg.lock = false;
+  mg.tiles = []; mg.flipped = []; mg.matched = 0; mg.total = chosen.length; mg.moves = 0; mg.seconds = 0; mg.lock = false;
 
   var items = [];
   chosen.forEach(function(pair, idx){
-    items.push({pairId:idx, type:"word", text:pair.w, isJp: state.lang==="ja"});
-    items.push({pairId:idx, type:"meaning", text:pair.m, isJp:false});
+    items.push({pairId:idx, type:"word", text:pair.w});
+    items.push({pairId:idx, type:"meaning", text:pair.m});
   });
   mg.tiles = shuffle(items);
 
@@ -1011,12 +907,8 @@ function startMatch(){
     var tile = document.createElement("div");
     tile.className = "tile";
     tile.dataset.index = i;
-    var frontClass = item.isJp ? "tile-front jp" : (item.type==="meaning" ? "tile-front kr" : "tile-front");
-    tile.innerHTML =
-      '<div class="tile-inner">' +
-        '<div class="tile-face tile-back"></div>' +
-        '<div class="tile-face ' + frontClass + '">' + item.text + '</div>' +
-      '</div>';
+    var frontClass = item.type==="meaning" ? "tile-front kr" : "tile-front";
+    tile.innerHTML = '<div class="tile-inner"><div class="tile-face tile-back"></div><div class="tile-face ' + frontClass + '">' + item.text + '</div></div>';
     tile.addEventListener("click", function(){ flipTile(i); });
     grid.appendChild(tile);
   });
@@ -1053,27 +945,19 @@ function flipTile(i){
 
     if(a.pairId === b.pairId && a.type !== b.type){
       setTimeout(function(){
-        elA.classList.add("matched");
-        elB.classList.add("matched");
+        elA.classList.add("matched"); elB.classList.add("matched");
         mg.matched++;
         $("match-pairs").textContent = mg.matched + "/" + mg.total;
         reactCharacter(true);
-        mg.flipped = [];
-        mg.lock = false;
-        if(mg.matched === mg.total){
-          clearInterval(mg.timer);
-          setTimeout(finishMatch, 500);
-        }
+        mg.flipped = []; mg.lock = false;
+        if(mg.matched === mg.total){ clearInterval(mg.timer); setTimeout(finishMatch, 500); }
       }, 350);
     } else {
-      elA.classList.add("wrong");
-      elB.classList.add("wrong");
+      elA.classList.add("wrong"); elB.classList.add("wrong");
       reactCharacter(false);
       setTimeout(function(){
-        elA.classList.remove("flipped","wrong");
-        elB.classList.remove("flipped","wrong");
-        mg.flipped = [];
-        mg.lock = false;
+        elA.classList.remove("flipped","wrong"); elB.classList.remove("flipped","wrong");
+        mg.flipped = []; mg.lock = false;
       }, 700);
     }
   }
@@ -1083,37 +967,21 @@ function finishMatch(){
   var score = Math.max(0, 1000 - (mg.moves - mg.total) * 15 - mg.seconds * 3);
   var xpGain = mg.total * 8;
   var coinGain = mg.total * 3;
-  showResult({
-    emoji:"🃏",
-    title: "짝맞추기 완료!",
-    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
-    stats: [
-      {v: mg.seconds + "초", l:"걸린 시간"},
-      {v: mg.moves, l:"시도 횟수"},
-      {v: mg.total, l:"맞춘 짝"},
-      {v: score, l:"점수"}
-    ]
+  showResult({ emoji:"🃏", title:"짝맞추기 완료!", sub: sessionLabel(),
+    stats:[ {v:mg.seconds+"초",l:"걸린 시간"}, {v:mg.moves,l:"시도 횟수"}, {v:mg.total,l:"맞춘 짝"}, {v:score,l:"점수"} ]
   }, xpGain, coinGain);
 }
+$("match-back").addEventListener("click", function(){ clearInterval(mg.timer); showScreen("screen-home"); });
 
-$("match-back").addEventListener("click", function(){
-  clearInterval(mg.timer);
-  showScreen("screen-home");
-});
-
+/* ---------------- 스피드 퀴즈 ---------------- */
 var qz = { deck:[], order:[], idx:0, score:0, streak:0, best:0, correct:0, total:10, timer:null, duration:8000 };
 
 function startQuiz(){
-  var deck = wordBank[state.lang][state.level];
+  var deck = contentBank[state.subject][state.grade];
   qz.deck = deck;
-  qz.total = Math.min(10, deck.length);
+  qz.total = Math.min(deck.length, state.subject==="english" ? 10 : 6);
   qz.order = shuffle(deck).slice(0, qz.total);
-  qz.idx = 0;
-  qz.score = 0;
-  qz.streak = 0;
-  qz.best = 0;
-  qz.correct = 0;
-
+  qz.idx = 0; qz.score = 0; qz.streak = 0; qz.best = 0; qz.correct = 0;
   $("quiz-score").textContent = "0";
   renderPet();
   showScreen("screen-quiz");
@@ -1123,11 +991,10 @@ function startQuiz(){
 function nextQuestion(){
   clearInterval(qz.timer);
   if(qz.idx >= qz.total){ finishQuiz(); return; }
-
   var item = qz.order[qz.idx];
   $("quiz-progress").textContent = (qz.idx+1) + "/" + qz.total;
   $("quiz-word").textContent = item.w;
-  $("quiz-romaji").textContent = item.r ? item.r : "";
+  $("quiz-romaji").textContent = "";
 
   var wrongPool = qz.deck.filter(function(d){ return d.m !== item.m; });
   wrongPool = shuffle(wrongPool).slice(0,3).map(function(d){ return d.m; });
@@ -1155,28 +1022,18 @@ function nextQuestion(){
 function answerQuestion(isCorrect, btnEl, correctText){
   clearTimeout(qz.timer);
   var buttons = document.querySelectorAll("#quiz-answers .answer-btn");
-  buttons.forEach(function(b){
-    b.style.pointerEvents = "none";
-    if(b.textContent === correctText) b.classList.add("correct");
-  });
+  buttons.forEach(function(b){ b.style.pointerEvents = "none"; if(b.textContent === correctText) b.classList.add("correct"); });
   if(!isCorrect && btnEl) btnEl.classList.add("wrong");
   reactCharacter(isCorrect);
 
   if(isCorrect){
-    qz.streak++;
-    qz.best = Math.max(qz.best, qz.streak);
-    qz.correct++;
-    var gain = 10 + qz.streak * 2;
-    qz.score += gain;
+    qz.streak++; qz.best = Math.max(qz.best, qz.streak); qz.correct++;
+    var gain = 10 + qz.streak * 2; qz.score += gain;
     toast("+" + gain + " 정답!", true);
-  } else {
-    qz.streak = 0;
-    toast("아쉬워요", false);
-  }
+  } else { qz.streak = 0; toast("아쉬워요", false); }
   $("quiz-score").textContent = qz.score;
   $("streak-num").textContent = qz.streak;
   $("streak-fill").style.width = Math.min(100, qz.streak * 20) + "%";
-
   qz.idx++;
   setTimeout(nextQuestion, 850);
 }
@@ -1184,125 +1041,148 @@ function answerQuestion(isCorrect, btnEl, correctText){
 function finishQuiz(){
   var xpGain = qz.correct * 10 + qz.best * 2;
   var coinGain = qz.correct * 3;
-  showResult({
-    emoji:"⚡",
-    title: "스피드 퀴즈 완료!",
-    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
-    stats: [
-      {v: qz.score, l:"최종 점수"},
-      {v: qz.correct + "/" + qz.total, l:"정답 수"},
-      {v: qz.best, l:"최고 콤보"},
-      {v: Math.round(qz.correct/qz.total*100) + "%", l:"정답률"}
-    ]
+  showResult({ emoji:"⚡", title:"스피드 퀴즈 완료!", sub: sessionLabel(),
+    stats:[ {v:qz.score,l:"최종 점수"}, {v:qz.correct+"/"+qz.total,l:"정답 수"}, {v:qz.best,l:"최고 콤보"}, {v:Math.round(qz.correct/qz.total*100)+"%",l:"정답률"} ]
   }, xpGain, coinGain);
 }
+$("quiz-back").addEventListener("click", function(){ clearTimeout(qz.timer); showScreen("screen-home"); });
 
-$("quiz-back").addEventListener("click", function(){
-  clearTimeout(qz.timer);
-  showScreen("screen-home");
-});
+/* ---------------- 빈칸 채우기 ---------------- */
+var bg = { deck:[], order:[], idx:0, score:0, streak:0, best:0, correct:0, total:10, timer:null, duration:8000, pool:[], englishTier:null };
 
-var bg = { deck:[], order:[], idx:0, score:0, streak:0, best:0, correct:0, total:10, timer:null, duration:8000, pool:[] };
-
-function buildBlankPool(deck){
+function buildCharPool(deck, field){
   var set = {};
-  deck.forEach(function(d){
-    Array.from(d.w).forEach(function(ch){ set[ch] = true; });
-  });
+  deck.forEach(function(d){ Array.from(d[field]).forEach(function(ch){ if(ch !== " ") set[ch] = true; }); });
   return Object.keys(set);
+}
+function englishTierForGrade(grade){
+  if(grade === 1) return "char1";
+  if(grade === 2) return "char2";
+  if(grade === 3 || grade === 4) return "word";
+  return "sentence";
 }
 
 function startBlank(){
-  var deck = wordBank[state.lang][state.level];
+  var deck = contentBank[state.subject][state.grade];
   bg.deck = deck;
-  bg.pool = buildBlankPool(deck);
-  bg.total = Math.min(10, deck.length);
-  bg.order = shuffle(deck).slice(0, bg.total);
-  bg.idx = 0;
-  bg.score = 0;
-  bg.streak = 0;
-  bg.best = 0;
-  bg.correct = 0;
-
+  bg.idx = 0; bg.score = 0; bg.streak = 0; bg.best = 0; bg.correct = 0;
   $("blank-score").textContent = "0";
   renderPet();
   showScreen("screen-blank");
+
+  if(state.subject === "english"){
+    bg.englishTier = englishTierForGrade(state.grade);
+    if(bg.englishTier === "sentence"){
+      bg.order = shuffle(englishSentences[state.grade]).slice(0, Math.min(6, englishSentences[state.grade].length));
+    } else {
+      bg.order = shuffle(deck).slice(0, Math.min(8, deck.length));
+    }
+    bg.total = bg.order.length;
+    bg.pool = buildCharPool(deck, "w");
+  } else {
+    bg.englishTier = null;
+    bg.order = shuffle(deck).slice(0, Math.min(8, deck.length));
+    bg.total = bg.order.length;
+    bg.pool = buildCharPool(deck, "w");
+  }
   nextBlank();
 }
 
 function nextBlank(){
   clearTimeout(bg.timer);
   if(bg.idx >= bg.total){ finishBlank(); return; }
+  if(bg.englishTier === "char1" || bg.englishTier === "char2"){ renderCharBlank(bg.englishTier === "char2" ? 2 : 1); }
+  else if(bg.englishTier === "word"){ renderWordBlank(); }
+  else if(bg.englishTier === "sentence"){ renderSentenceBlank(); }
+  else { renderCharBlank(1); }
+}
 
-  var item = bg.order[bg.idx];
-  var chars = Array.from(item.w);
-  var pos = Math.floor(Math.random() * chars.length);
-  var correctChar = chars[pos];
-  var displayChars = chars.slice();
-  displayChars[pos] = "＿";
-  var displayWord = displayChars.join("");
-
-  $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
-  $("blank-word").textContent = displayWord;
-  $("blank-meaning").textContent = item.m;
-
-  var distractorPool = bg.pool.filter(function(c){ return c !== correctChar; });
-  var distractors = shuffle(distractorPool).slice(0,3);
-  var fallback = state.lang === "en" ? "abcdefghijklmnopqrstuvwxyz".split("") : bg.pool;
-  var guard = 0;
-  while(distractors.length < 3 && guard < 50){
-    var r = fallback[Math.floor(Math.random()*fallback.length)];
-    if(r !== correctChar && distractors.indexOf(r) === -1) distractors.push(r);
-    guard++;
-  }
-  var options = shuffle([correctChar].concat(distractors));
-
-  var box = $("blank-answers");
-  box.innerHTML = "";
-  options.forEach(function(opt){
-    var btn = document.createElement("div");
-    btn.className = "answer-btn";
-    btn.textContent = opt;
-    btn.style.fontSize = state.lang === "ja" ? "18px" : "16px";
-    btn.addEventListener("click", function(){ answerBlank(opt === correctChar, btn, correctChar, item.w); });
-    box.appendChild(btn);
-  });
-
+function startBlankTimer(){
   $("blank-timerbar").style.width = "100%";
   $("blank-timerbar").style.transition = "none";
   requestAnimationFrame(function(){
     $("blank-timerbar").style.transition = "width " + (bg.duration/1000) + "s linear";
     $("blank-timerbar").style.width = "0%";
   });
-  bg.timer = setTimeout(function(){ answerBlank(false, null, correctChar, item.w); }, bg.duration);
 }
 
-function answerBlank(isCorrect, btnEl, correctChar, fullWord){
+function renderCharBlank(count){
+  var item = bg.order[bg.idx];
+  var chars = Array.from(item.w);
+  var validIdx = chars.map(function(c,i){ return i; }).filter(function(i){ return chars[i] !== " "; });
+  var idxs = shuffle(validIdx).slice(0, Math.min(count, validIdx.length)).sort(function(a,b){ return a-b; });
+  var correctStr = idxs.map(function(i){ return chars[i]; }).join("");
+  var displayChars = chars.slice();
+  idxs.forEach(function(i){ displayChars[i] = "＿"; });
+
+  $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
+  $("blank-word").textContent = displayChars.join("");
+  $("blank-meaning").textContent = item.m;
+
+  var pool = bg.pool;
+  var distractors = []; var guard = 0;
+  while(distractors.length < 3 && guard < 80){
+    var pick = count === 1 ? pool[Math.floor(Math.random()*pool.length)] : (pool[Math.floor(Math.random()*pool.length)] + pool[Math.floor(Math.random()*pool.length)]);
+    if(pick !== correctStr && distractors.indexOf(pick) === -1) distractors.push(pick);
+    guard++;
+  }
+  var options = shuffle([correctStr].concat(distractors));
+  renderBlankOptions(options, function(opt){ return opt === correctStr; }, correctStr, item.w);
+}
+
+function renderWordBlank(){
+  var item = bg.order[bg.idx];
+  $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
+  $("blank-word").textContent = "＿".repeat(item.w.length);
+  $("blank-meaning").textContent = item.m;
+  var wrongPool = bg.deck.filter(function(d){ return d.w !== item.w; });
+  var distractors = shuffle(wrongPool).slice(0,3).map(function(d){ return d.w; });
+  var options = shuffle([item.w].concat(distractors));
+  renderBlankOptions(options, function(opt){ return opt === item.w; }, item.w, item.w);
+}
+
+function renderSentenceBlank(){
+  var item = bg.order[bg.idx];
+  $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
+  $("blank-word").textContent = item.s.replace("___", "＿＿＿＿");
+  $("blank-meaning").textContent = item.m;
+  var allSet = englishSentences[state.grade];
+  var wrongPool = allSet.filter(function(d){ return d.w !== item.w; });
+  var distractors = shuffle(wrongPool).slice(0,3).map(function(d){ return d.w; });
+  var options = shuffle([item.w].concat(distractors));
+  renderBlankOptions(options, function(opt){ return opt === item.w; }, item.w, item.w);
+}
+
+function renderBlankOptions(options, isCorrectFn, correctVal, fullWord){
+  var box = $("blank-answers");
+  box.innerHTML = "";
+  options.forEach(function(opt){
+    var btn = document.createElement("div");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.style.fontSize = opt.length > 6 ? "13px" : "16px";
+    btn.addEventListener("click", function(){ answerBlank(isCorrectFn(opt), btn, correctVal, fullWord); });
+    box.appendChild(btn);
+  });
+  startBlankTimer();
+  bg.timer = setTimeout(function(){ answerBlank(false, null, correctVal, fullWord); }, bg.duration);
+}
+
+function answerBlank(isCorrect, btnEl, correctVal, fullWord){
   clearTimeout(bg.timer);
   var buttons = document.querySelectorAll("#blank-answers .answer-btn");
-  buttons.forEach(function(b){
-    b.style.pointerEvents = "none";
-    if(b.textContent === correctChar) b.classList.add("correct");
-  });
+  buttons.forEach(function(b){ b.style.pointerEvents = "none"; if(b.textContent === correctVal) b.classList.add("correct"); });
   if(!isCorrect && btnEl) btnEl.classList.add("wrong");
   reactCharacter(isCorrect);
 
   if(isCorrect){
-    bg.streak++;
-    bg.best = Math.max(bg.best, bg.streak);
-    bg.correct++;
-    var gain = 10 + bg.streak * 2;
-    bg.score += gain;
+    bg.streak++; bg.best = Math.max(bg.best, bg.streak); bg.correct++;
+    var gain = 10 + bg.streak * 2; bg.score += gain;
     toast("+" + gain + " 정답!", true);
-  } else {
-    bg.streak = 0;
-    toast("정답: " + fullWord, false);
-  }
+  } else { bg.streak = 0; toast("정답: " + fullWord, false); }
   $("blank-score").textContent = bg.score;
   $("blank-streak-num").textContent = bg.streak;
   $("blank-streak-fill").style.width = Math.min(100, bg.streak * 20) + "%";
-  $("blank-word").textContent = fullWord;
-
   bg.idx++;
   setTimeout(nextBlank, 900);
 }
@@ -1310,24 +1190,95 @@ function answerBlank(isCorrect, btnEl, correctChar, fullWord){
 function finishBlank(){
   var xpGain = bg.correct * 10 + bg.best * 2;
   var coinGain = bg.correct * 3;
-  showResult({
-    emoji:"🔤",
-    title: "빈칸 채우기 완료!",
-    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
-    stats: [
-      {v: bg.score, l:"최종 점수"},
-      {v: bg.correct + "/" + bg.total, l:"정답 수"},
-      {v: bg.best, l:"최고 콤보"},
-      {v: Math.round(bg.correct/bg.total*100) + "%", l:"정답률"}
-    ]
+  showResult({ emoji:"🔤", title:"빈칸 채우기 완료!", sub: sessionLabel(),
+    stats:[ {v:bg.score,l:"최종 점수"}, {v:bg.correct+"/"+bg.total,l:"정답 수"}, {v:bg.best,l:"최고 콤보"}, {v:Math.round(bg.correct/bg.total*100)+"%",l:"정답률"} ]
   }, xpGain, coinGain);
 }
+$("blank-back").addEventListener("click", function(){ clearTimeout(bg.timer); showScreen("screen-home"); });
 
-$("blank-back").addEventListener("click", function(){
-  clearTimeout(bg.timer);
-  showScreen("screen-home");
+/* ---------------- 발음 체크 ---------------- */
+var pr = { items:[], idx:0, score:0, streak:0, best:0, correct:0, total:8, listening:false };
+
+function buildPronounceItems(){
+  if(state.grade >= 5){
+    return englishSentences[state.grade].map(function(it){ return { target: it.s.replace("___", it.w), meaning: it.m }; });
+  }
+  var deck = contentBank.english[state.grade];
+  return deck.map(function(it){ return { target: it.w, meaning: it.m }; });
+}
+
+function startPronounce(){
+  pr.items = shuffle(buildPronounceItems()).slice(0, 8);
+  pr.total = pr.items.length;
+  pr.idx = 0; pr.score = 0; pr.streak = 0; pr.best = 0; pr.correct = 0;
+  $("pronounce-score").textContent = "0";
+  renderPet();
+  showScreen("screen-pronounce");
+  nextPronounce();
+}
+function nextPronounce(){
+  if(pr.idx >= pr.total){ finishPronounce(); return; }
+  var item = pr.items[pr.idx];
+  $("pronounce-progress").textContent = (pr.idx+1) + "/" + pr.total;
+  $("pronounce-target").textContent = item.target;
+  $("pronounce-meaning").textContent = item.meaning;
+  $("transcript-box").innerHTML = "&nbsp;";
+  $("mic-hint").textContent = "버튼을 누르고 큰 소리로 읽어보세요";
+}
+function normalizeSpeech(s){ return s.toLowerCase().replace(/[.,!?]/g,"").replace(/\s+/g," ").trim(); }
+function isSpeechCorrect(target, transcript){
+  var t = normalizeSpeech(target), h = normalizeSpeech(transcript);
+  if(t === h) return true;
+  var tWords = t.split(" ");
+  if(tWords.length > 1){
+    var hWords = h.split(" ");
+    var matched = tWords.filter(function(w){ return hWords.indexOf(w) !== -1; }).length;
+    return (matched / tWords.length) >= 0.8;
+  }
+  return false;
+}
+var SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+$("mic-btn").addEventListener("click", function(){
+  if(!SpeechRecognitionCtor){ toast("이 기기는 음성 인식을 지원하지 않아요", false); $("mic-hint").textContent = "Chrome 브라우저에서 시도해보세요"; return; }
+  if(pr.listening) return;
+  var item = pr.items[pr.idx];
+  var rec = new SpeechRecognitionCtor();
+  rec.lang = "en-US"; rec.continuous = false; rec.interimResults = false;
+  pr.listening = true;
+  $("mic-btn").classList.add("listening");
+  $("mic-hint").textContent = "듣고 있어요...";
+  rec.onresult = function(evt){
+    var transcript = evt.results[0][0].transcript;
+    $("transcript-box").textContent = "내가 말한 것: " + transcript;
+    handlePronounceResult(isSpeechCorrect(item.target, transcript));
+  };
+  rec.onerror = function(){ pr.listening = false; $("mic-btn").classList.remove("listening"); $("mic-hint").textContent = "다시 눌러서 시도해보세요"; };
+  rec.onend = function(){ pr.listening = false; $("mic-btn").classList.remove("listening"); };
+  try{ rec.start(); }catch(e){ pr.listening = false; $("mic-btn").classList.remove("listening"); }
 });
+function handlePronounceResult(correct){
+  reactCharacter(correct);
+  if(correct){
+    pr.streak++; pr.best = Math.max(pr.best, pr.streak); pr.correct++;
+    var gain = 10 + pr.streak * 2; pr.score += gain;
+    toast("+" + gain + " 정확해요!", true);
+    $("mic-hint").textContent = "잘했어요! 다음 문제로 넘어가요";
+  } else { pr.streak = 0; toast("다시 도전해봐요", false); $("mic-hint").textContent = "다시 눌러서 도전해보세요"; }
+  $("pronounce-score").textContent = pr.score;
+  $("pronounce-streak-num").textContent = pr.streak;
+  $("pronounce-streak-fill").style.width = Math.min(100, pr.streak * 20) + "%";
+  if(correct){ pr.idx++; setTimeout(nextPronounce, 1100); }
+}
+function finishPronounce(){
+  var xpGain = pr.correct * 10 + pr.best * 2;
+  var coinGain = pr.correct * 3;
+  showResult({ emoji:"🎤", title:"발음 체크 완료!", sub: sessionLabel(),
+    stats:[ {v:pr.score,l:"최종 점수"}, {v:pr.correct+"/"+pr.total,l:"정답 수"}, {v:pr.best,l:"최고 콤보"}, {v:Math.round(pr.correct/pr.total*100)+"%",l:"정답률"} ]
+  }, xpGain, coinGain);
+}
+$("pronounce-back").addEventListener("click", function(){ showScreen("screen-home"); });
 
+/* ---------------- 결과 화면 ---------------- */
 function showResult(data, xpGain, coinGain){
   $("result-emoji").textContent = data.emoji;
   $("result-title").textContent = data.title;
@@ -1345,16 +1296,13 @@ function showResult(data, xpGain, coinGain){
   showScreen("screen-result");
   addRewards(xpGain, coinGain);
 }
-
 $("result-home").addEventListener("click", function(){ showScreen("screen-home"); });
 $("result-retry").addEventListener("click", function(){
   if(state.mode === "match"){ startMatch(); }
   else if(state.mode === "quiz"){ startQuiz(); }
-  else { startBlank(); }
+  else if(state.mode === "blank"){ startBlank(); }
+  else { startPronounce(); }
 });
-
-loadPlayer();
-renderPet();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load", function(){

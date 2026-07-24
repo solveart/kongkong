@@ -1,7 +1,8 @@
-var CACHE_NAME = "kongkong-cache-v1";
+var CACHE_NAME = "inzzi-cache-v1";
 var FILES_TO_CACHE = [
   "./index.html",
   "./manifest.json",
+  "./firebase-config.js",
   "./icon-192.png",
   "./icon-512.png"
 ];
