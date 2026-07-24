@@ -1,10 +1,22 @@
-var CACHE_NAME = "inzzi-cache-v1";
+var CACHE_NAME = "inzzi-cache-v2";
 var FILES_TO_CACHE = [
   "./index.html",
   "./manifest.json",
   "./firebase-config.js",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./characters/girlA_face.png",
+  "./characters/girlA_stage0.png",
+  "./characters/girlA_stage1.png",
+  "./characters/girlA_stage2.png",
+  "./characters/girlA_stage3.png",
+  "./characters/girlA_stage4.png",
+  "./characters/girlB_face.png",
+  "./characters/girlB_stage0.png",
+  "./characters/girlB_stage1.png",
+  "./characters/girlB_stage2.png",
+  "./characters/girlB_stage3.png",
+  "./characters/girlB_stage4.png"
 ];
 
 self.addEventListener("install", function(evt){
