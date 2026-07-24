@@ -116,6 +116,18 @@
   .species-item .nm{ font-family:'Jua',sans-serif; font-size:12px; }
   .species-item:active{ transform:scale(.96); }
 
+  .mode-card-list{ display:flex; flex-direction:column; gap:10px; margin-top:6px; }
+  .mode-card{
+    display:flex; align-items:center; gap:14px; background:var(--bg1); border:2px solid transparent;
+    border-radius:18px; padding:14px 16px; cursor:pointer; text-align:left;
+  }
+  .mode-card:active{ transform:scale(.98); }
+  .mode-card .mc-ic{ font-size:30px; }
+  .mode-card .mc-txt{ flex:1; }
+  .mode-card .mc-title{ font-family:'Jua',sans-serif; font-size:15px; color:var(--ink); }
+  .mode-card .mc-sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .mode-card .mc-arrow{ font-size:18px; color:var(--purple-dk); }
+
   .room-scene{
     border-radius:22px; padding:20px 14px; margin-bottom:14px; text-align:center; border:2px solid #fff; min-height:180px;
     display:flex; flex-direction:column; justify-content:flex-end; position:relative;
@@ -280,7 +292,7 @@
     </div>
 
     <div class="group-label">📚 과목 선택</div>
-    <div class="chips four" id="subject-chips">
+    <div class="chips three" id="subject-chips">
       <div class="chip selected" data-subject="korean"><span class="big">📖</span>국어</div>
       <div class="chip" data-subject="math"><span class="big">🔢</span>수학</div>
       <div class="chip" data-subject="social"><span class="big">🌍</span>사회·도덕</div>
@@ -288,17 +300,22 @@
       <div class="chip" data-subject="pe"><span class="big">⚽</span>체육</div>
       <div class="chip" data-subject="art"><span class="big">🎨</span>예술</div>
       <div class="chip" data-subject="english"><span class="big">🇬🇧</span>영어</div>
+      <div class="chip" data-subject="japanese"><span class="big">🇯🇵</span>일본어</div>
+      <div class="chip" data-subject="hanja"><span class="big">📜</span>한자</div>
     </div>
 
-    <div class="group-label">🎮 게임 모드</div>
-    <div class="chips four" id="mode-chips">
-      <div class="chip selected" data-mode="match"><span class="big">🃏</span>짝맞추기</div>
-      <div class="chip" data-mode="quiz"><span class="big">⚡</span>퀴즈</div>
-      <div class="chip" data-mode="blank"><span class="big">🔤</span>빈칸</div>
-      <div class="chip" data-mode="pronounce" id="chip-pronounce" style="display:none;"><span class="big">🎤</span>발음체크</div>
-    </div>
+    <p class="sub" style="margin-top:14px;">👆 과목을 누르면 게임을 고를 수 있어요</p>
+  </div>
 
-    <button class="start-btn" id="start-btn">게임 시작! 🚀</button>
+  <div class="screen" id="screen-mode-select">
+    <div class="topbar">
+      <button class="back-btn" id="mode-select-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-mode">🥚</span></div>
+      <span style="width:34px;"></span>
+    </div>
+    <h1 id="mode-select-title" style="font-size:18px;">국어</h1>
+    <p class="sub" id="mode-select-sub">1학년 · 어떤 게임을 할까요?</p>
+    <div class="mode-card-list" id="mode-card-list"></div>
   </div>
 
   <div class="screen" id="screen-character-pick">
@@ -494,30 +511,68 @@ var contentBank = {
     4:[{w:"happy",m:"행복한"},{w:"careful",m:"조심스러운"},{w:"honest",m:"정직한"},{w:"brave",m:"용감한"},{w:"kind",m:"친절한"},{w:"polite",m:"예의바른"},{w:"curious",m:"호기심 많은"},{w:"active",m:"활발한"},{w:"gentle",m:"온화한"},{w:"clever",m:"영리한"},{w:"patient",m:"참을성 있는"},{w:"cheerful",m:"명랑한"}],
     5:[{w:"achieve",m:"성취하다"},{w:"generous",m:"관대한"},{w:"ancient",m:"고대의"},{w:"fragile",m:"부서지기 쉬운"},{w:"abundant",m:"풍부한"},{w:"diligent",m:"부지런한"},{w:"humble",m:"겸손한"},{w:"resilient",m:"회복력 있는"},{w:"profound",m:"심오한"},{w:"ambiguous",m:"모호한"},{w:"tenacious",m:"끈기있는"},{w:"versatile",m:"다재다능한"}],
     6:[{w:"inevitable",m:"불가피한"},{w:"eloquent",m:"웅변적인"},{w:"benevolent",m:"자비로운"},{w:"meticulous",m:"꼼꼼한"},{w:"candid",m:"솔직한"},{w:"hesitate",m:"망설이다"},{w:"reluctant",m:"꺼리는"},{w:"analyze",m:"분석하다"},{w:"conclude",m:"결론짓다"},{w:"evaluate",m:"평가하다"},{w:"summarize",m:"요약하다"},{w:"hypothesis",m:"가설"}]
+  },
+  japanese: {
+    1:[{w:"りんご",m:"사과"},{w:"ほん",m:"책"},{w:"みず",m:"물"},{w:"いえ",m:"집"},{w:"いぬ",m:"개"},{w:"ねこ",m:"고양이"},{w:"たいよう",m:"태양"},{w:"つき",m:"달"},{w:"ほし",m:"별"},{w:"き",m:"나무"},{w:"はな",m:"꽃"},{w:"いす",m:"의자"}],
+    2:[{w:"つくえ",m:"책상"},{w:"まど",m:"창문"},{w:"でんわ",m:"전화"},{w:"くつ",m:"신발"},{w:"ぼうし",m:"모자"},{w:"かばん",m:"가방"},{w:"かさ",m:"우산"},{w:"はし",m:"다리"},{w:"もり",m:"숲"},{w:"しま",m:"섬"},{w:"くも",m:"구름"},{w:"うみ",m:"바다"}],
+    3:[{w:"やま",m:"산"},{w:"かわ",m:"강"},{w:"さばく",m:"사막"},{w:"たに",m:"계곡"},{w:"かみなり",m:"천둥"},{w:"はまべ",m:"해변"},{w:"かざん",m:"화산"},{w:"たき",m:"폭포"},{w:"どうくつ",m:"동굴"},{w:"みなと",m:"항구"},{w:"がけ",m:"절벽"},{w:"ぬま",m:"늪"}],
+    4:[{w:"うれしい",m:"기쁜"},{w:"しんせつ",m:"친절한"},{w:"ゆうかん",m:"용감한"},{w:"げんき",m:"활발한"},{w:"やさしい",m:"다정한"},{w:"かしこい",m:"영리한"},{w:"しょうじき",m:"정직한"},{w:"れいぎただしい",m:"예의바른"},{w:"にぎやか",m:"명랑한"},{w:"おだやか",m:"온화한"},{w:"がまんづよい",m:"참을성 있는"},{w:"まじめ",m:"성실한"}],
+    5:[{w:"挑戦",m:"도전"},{w:"努力",m:"노력"},{w:"経験",m:"경험"},{w:"成長",m:"성장"},{w:"目標",m:"목표"},{w:"信頼",m:"신뢰"},{w:"諦める",m:"포기하다"},{w:"成功",m:"성공"},{w:"失敗",m:"실패"},{w:"感謝",m:"감사"},{w:"挑む",m:"도전하다"},{w:"責任",m:"책임"}],
+    6:[{w:"曖昧",m:"모호한"},{w:"寛大",m:"관대한"},{w:"几帳面",m:"꼼꼼한"},{w:"必然",m:"필연"},{w:"雄弁",m:"웅변"},{w:"忍耐強い",m:"끈기있는"},{w:"多才",m:"다재다능한"},{w:"率直",m:"솔직한"},{w:"分析",m:"분석"},{w:"結論",m:"결론"},{w:"評価",m:"평가"},{w:"仮説",m:"가설"}]
+  },
+  hanja: {
+    1:[{w:"天",m:"하늘 천"},{w:"地",m:"따 지"},{w:"日",m:"날 일"},{w:"月",m:"달 월"},{w:"山",m:"메 산"},{w:"水",m:"물 수"}],
+    2:[{w:"火",m:"불 화"},{w:"木",m:"나무 목"},{w:"金",m:"쇠 금"},{w:"土",m:"흙 토"},{w:"人",m:"사람 인"},{w:"大",m:"큰 대"}],
+    3:[{w:"小",m:"작을 소"},{w:"中",m:"가운데 중"},{w:"上",m:"위 상"},{w:"下",m:"아래 하"},{w:"左",m:"왼 좌"},{w:"右",m:"오른 우"}],
+    4:[{w:"父",m:"아비 부"},{w:"母",m:"어미 모"},{w:"兄",m:"형 형"},{w:"弟",m:"아우 제"},{w:"學",m:"배울 학"},{w:"校",m:"학교 교"}],
+    5:[{w:"春",m:"봄 춘"},{w:"夏",m:"여름 하"},{w:"秋",m:"가을 추"},{w:"冬",m:"겨울 동"},{w:"東",m:"동녘 동"},{w:"西",m:"서녘 서"}],
+    6:[{w:"南",m:"남녘 남"},{w:"北",m:"북녘 북"},{w:"心",m:"마음 심"},{w:"生",m:"날 생"},{w:"國",m:"나라 국"},{w:"民",m:"백성 민"}]
   }
 };
 
-var englishSentences = {
-  5:[
-    {s:"I want to ___ my dream.", w:"achieve", m:"나는 내 꿈을 이루고 싶어요."},
-    {s:"She is very ___ to poor people.", w:"generous", m:"그녀는 가난한 사람들에게 매우 관대해요."},
-    {s:"This vase is very ___.", w:"fragile", m:"이 꽃병은 아주 깨지기 쉬워요."},
-    {s:"He is a ___ student.", w:"diligent", m:"그는 부지런한 학생이에요."},
-    {s:"Please stay ___ about your mistakes.", w:"humble", m:"실수에 대해 겸손한 자세를 유지하세요."},
-    {s:"The book has a ___ meaning.", w:"profound", m:"그 책은 심오한 의미를 담고 있어요."}
-  ],
-  6:[
-    {s:"Change is ___ in life.", w:"inevitable", m:"삶에서 변화는 피할 수 없어요."},
-    {s:"The speaker was very ___.", w:"eloquent", m:"그 연설자는 아주 웅변적이었어요."},
-    {s:"He gave a ___ answer.", w:"candid", m:"그는 솔직한 대답을 했어요."},
-    {s:"Don't ___ to ask for help.", w:"hesitate", m:"도움을 청하는 걸 망설이지 마세요."},
-    {s:"We need to ___ the data.", w:"analyze", m:"우리는 자료를 분석해야 해요."},
-    {s:"Please ___ the story in one sentence.", w:"summarize", m:"그 이야기를 한 문장으로 요약해보세요."}
-  ]
+var sentencesBank = {
+  english: {
+    5:[
+      {s:"I want to ___ my dream.", w:"achieve", m:"나는 내 꿈을 이루고 싶어요."},
+      {s:"She is very ___ to poor people.", w:"generous", m:"그녀는 가난한 사람들에게 매우 관대해요."},
+      {s:"This vase is very ___.", w:"fragile", m:"이 꽃병은 아주 깨지기 쉬워요."},
+      {s:"He is a ___ student.", w:"diligent", m:"그는 부지런한 학생이에요."},
+      {s:"Please stay ___ about your mistakes.", w:"humble", m:"실수에 대해 겸손한 자세를 유지하세요."},
+      {s:"The book has a ___ meaning.", w:"profound", m:"그 책은 심오한 의미를 담고 있어요."}
+    ],
+    6:[
+      {s:"Change is ___ in life.", w:"inevitable", m:"삶에서 변화는 피할 수 없어요."},
+      {s:"The speaker was very ___.", w:"eloquent", m:"그 연설자는 아주 웅변적이었어요."},
+      {s:"He gave a ___ answer.", w:"candid", m:"그는 솔직한 대답을 했어요."},
+      {s:"Don't ___ to ask for help.", w:"hesitate", m:"도움을 청하는 걸 망설이지 마세요."},
+      {s:"We need to ___ the data.", w:"analyze", m:"우리는 자료를 분석해야 해요."},
+      {s:"Please ___ the story in one sentence.", w:"summarize", m:"그 이야기를 한 문장으로 요약해보세요."}
+    ]
+  },
+  japanese: {
+    5:[
+      {s:"___は大切です。", w:"挑戦", m:"도전은 중요해요."},
+      {s:"___は大切です。", w:"努力", m:"노력은 중요해요."},
+      {s:"___は大切です。", w:"経験", m:"경험은 중요해요."},
+      {s:"___は大切です。", w:"成長", m:"성장은 중요해요."},
+      {s:"___は大切です。", w:"目標", m:"목표는 중요해요."},
+      {s:"___は大切です。", w:"信頼", m:"신뢰는 중요해요."}
+    ],
+    6:[
+      {s:"___は大切です。", w:"責任", m:"책임은 중요해요."},
+      {s:"___は大切です。", w:"成功", m:"성공은 중요해요."},
+      {s:"___から学べます。", w:"失敗", m:"실패로부터 배울 수 있어요."},
+      {s:"___の気持ちを伝えましょう。", w:"感謝", m:"감사의 마음을 전해봐요."},
+      {s:"___な人が好きです。", w:"寛大", m:"저는 관대한 사람을 좋아해요."},
+      {s:"___な返事はよくないです。", w:"曖昧", m:"모호한 대답은 좋지 않아요."}
+    ]
+  }
 };
+function isForeignLanguage(subject){ return subject === "english" || subject === "japanese"; }
+function speechLangFor(subject){ return subject === "japanese" ? "ja-JP" : "en-US"; }
 
-var subjectLabels = { korean:"국어", math:"수학", social:"사회·도덕", science:"과학·실과", pe:"체육", art:"예술", english:"영어" };
-var subjectRoomColor = { korean:"linear-gradient(160deg,#FFE3EE,#FFF3FA)", math:"linear-gradient(160deg,#E3F0FF,#F5FAFF)", social:"linear-gradient(160deg,#E9F9E9,#F5FFF5)", science:"linear-gradient(160deg,#F1E9FF,#F8F3FF)", pe:"linear-gradient(160deg,#FFF3D9,#FFFAEF)", art:"linear-gradient(160deg,#FFE8E3,#FFF5F2)", english:"linear-gradient(160deg,#E3FBF3,#F0FFF9)" };
+var subjectLabels = { korean:"국어", math:"수학", social:"사회·도덕", science:"과학·실과", pe:"체육", art:"예술", english:"영어", japanese:"일본어", hanja:"한자" };
+var subjectRoomColor = { korean:"linear-gradient(160deg,#FFE3EE,#FFF3FA)", math:"linear-gradient(160deg,#E3F0FF,#F5FAFF)", social:"linear-gradient(160deg,#E9F9E9,#F5FFF5)", science:"linear-gradient(160deg,#F1E9FF,#F8F3FF)", pe:"linear-gradient(160deg,#FFF3D9,#FFFAEF)", art:"linear-gradient(160deg,#FFE8E3,#FFF5F2)", english:"linear-gradient(160deg,#E3FBF3,#F0FFF9)", japanese:"linear-gradient(160deg,#FFE9E3,#FFF6F2)", hanja:"linear-gradient(160deg,#F3E9DC,#FBF6EF)" };
 
 var speciesList = [
   {id:"rabbit", emoji:"🐰", nm:"토끼"},
@@ -682,13 +737,11 @@ function renderPet(){
     $("pet-name").textContent = subjectLabels[state.subject] + " 캐릭터 없음";
     $("pet-stats-row").style.display = "none";
     $("pick-character-btn").style.display = "inline-block";
-    $("start-btn").disabled = true;
     document.querySelectorAll(".mini-avatar").forEach(function(el){ el.textContent = "❓"; });
     return;
   }
   $("pet-stats-row").style.display = "flex";
   $("pick-character-btn").style.display = "none";
-  $("start-btn").disabled = false;
 
   var sp = speciesById(ch.species);
   var accEmoji = "";
@@ -803,42 +856,51 @@ document.querySelectorAll("#subject-chips .chip").forEach(function(c){
     document.querySelectorAll("#subject-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
     c.classList.add("selected");
     state.subject = c.dataset.subject;
-    var pronounceChip = $("chip-pronounce");
-    if(state.subject === "english"){
-      pronounceChip.style.display = "";
-    } else {
-      pronounceChip.style.display = "none";
-      if(state.mode === "pronounce"){
-        state.mode = "match";
-        document.querySelectorAll("#mode-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
-        document.querySelector('#mode-chips .chip[data-mode="match"]').classList.add("selected");
-      }
-    }
     renderPet();
-  });
-});
-document.querySelectorAll("#mode-chips .chip").forEach(function(c){
-  c.addEventListener("click", function(){
-    document.querySelectorAll("#mode-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
-    c.classList.add("selected");
-    state.mode = c.dataset.mode;
+    if(!currentChar()){
+      pendingCharacterCallback = openModeSelect;
+      openCharacterPick();
+      return;
+    }
+    openModeSelect();
   });
 });
 
-function launchGame(){
-  if(state.mode === "match"){ startMatch(); }
-  else if(state.mode === "quiz"){ startQuiz(); }
-  else if(state.mode === "blank"){ startBlank(); }
+function launchGame(mode){
+  state.mode = mode;
+  if(mode === "match"){ startMatch(); }
+  else if(mode === "quiz"){ startQuiz(); }
+  else if(mode === "blank"){ startBlank(); }
   else { startPronounce(); }
 }
-$("start-btn").addEventListener("click", function(){
-  if(!currentChar()){
-    pendingCharacterCallback = launchGame;
-    openCharacterPick();
-    return;
-  }
-  launchGame();
-});
+
+var modeDefs = [
+  {id:"match", ic:"🃏", title:"카드 짝맞추기", sub:"단어와 뜻을 짝지어요"},
+  {id:"quiz", ic:"⚡", title:"스피드 퀴즈", sub:"제한시간 안에 정답을 골라요"},
+  {id:"blank", ic:"🔤", title:"빈칸 채우기", sub:"빈칸에 알맞은 답을 찾아요"},
+  {id:"pronounce", ic:"🎤", title:"발음 체크", sub:"마이크로 직접 읽어봐요"}
+];
+
+function openModeSelect(){
+  var ch = currentChar();
+  var sp = speciesById(ch.species);
+  $("mode-select-title").textContent = subjectLabels[state.subject];
+  $("mode-select-sub").textContent = state.grade + "학년 · 어떤 게임을 할까요?";
+  document.querySelectorAll(".mini-avatar").forEach(function(el){ el.textContent = sp.emoji; });
+
+  var list = $("mode-card-list");
+  list.innerHTML = "";
+  modeDefs.forEach(function(md){
+    if(md.id === "pronounce" && !isForeignLanguage(state.subject)) return;
+    var card = document.createElement("div");
+    card.className = "mode-card";
+    card.innerHTML = '<span class="mc-ic">'+md.ic+'</span><span class="mc-txt"><span class="mc-title">'+md.title+'</span><span class="mc-sub">'+md.sub+'</span></span><span class="mc-arrow">→</span>';
+    card.addEventListener("click", function(){ launchGame(md.id); });
+    list.appendChild(card);
+  });
+  showScreen("screen-mode-select");
+}
+$("mode-select-back").addEventListener("click", function(){ showScreen("screen-home"); });
 
 /* ---------------- 상점 ---------------- */
 $("open-shop").addEventListener("click", function(){
@@ -1070,10 +1132,11 @@ function startBlank(){
   renderPet();
   showScreen("screen-blank");
 
-  if(state.subject === "english"){
+  if(isForeignLanguage(state.subject)){
     bg.englishTier = englishTierForGrade(state.grade);
     if(bg.englishTier === "sentence"){
-      bg.order = shuffle(englishSentences[state.grade]).slice(0, Math.min(6, englishSentences[state.grade].length));
+      var sset = sentencesBank[state.subject][state.grade];
+      bg.order = shuffle(sset).slice(0, Math.min(6, sset.length));
     } else {
       bg.order = shuffle(deck).slice(0, Math.min(8, deck.length));
     }
@@ -1146,7 +1209,7 @@ function renderSentenceBlank(){
   $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
   $("blank-word").textContent = item.s.replace("___", "＿＿＿＿");
   $("blank-meaning").textContent = item.m;
-  var allSet = englishSentences[state.grade];
+  var allSet = sentencesBank[state.subject][state.grade];
   var wrongPool = allSet.filter(function(d){ return d.w !== item.w; });
   var distractors = shuffle(wrongPool).slice(0,3).map(function(d){ return d.w; });
   var options = shuffle([item.w].concat(distractors));
@@ -1201,9 +1264,9 @@ var pr = { items:[], idx:0, score:0, streak:0, best:0, correct:0, total:8, liste
 
 function buildPronounceItems(){
   if(state.grade >= 5){
-    return englishSentences[state.grade].map(function(it){ return { target: it.s.replace("___", it.w), meaning: it.m }; });
+    return sentencesBank[state.subject][state.grade].map(function(it){ return { target: it.s.replace("___", it.w), meaning: it.m }; });
   }
-  var deck = contentBank.english[state.grade];
+  var deck = contentBank[state.subject][state.grade];
   return deck.map(function(it){ return { target: it.w, meaning: it.m }; });
 }
 
@@ -1243,7 +1306,7 @@ $("mic-btn").addEventListener("click", function(){
   if(pr.listening) return;
   var item = pr.items[pr.idx];
   var rec = new SpeechRecognitionCtor();
-  rec.lang = "en-US"; rec.continuous = false; rec.interimResults = false;
+  rec.lang = speechLangFor(state.subject); rec.continuous = false; rec.interimResults = false;
   pr.listening = true;
   $("mic-btn").classList.add("listening");
   $("mic-hint").textContent = "듣고 있어요...";
