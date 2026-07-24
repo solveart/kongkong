@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>콩콩이의 단어 모험</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="콩콩이">
+<meta name="theme-color" content="#FF8FAE">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@400;700&family=Baloo+2:wght@500;600;700;800&display=swap');
+
+  :root{
+    --bg1:#FFF3FA;
+    --bg2:#F1E9FF;
+    --card:#FFFFFF;
+    --pink:#FF8FAE;
+    --pink-dk:#E85D82;
+    --pink-bg:#FFE3EE;
+    --purple:#B79CED;
+    --purple-dk:#8B6FD1;
+    --purple-bg:#F1E9FF;
+    --mint:#6FE0C0;
+    --mint-dk:#2FBE9A;
+    --mint-bg:#DFFBF3;
+    --yellow:#FFD166;
+    --yellow-dk:#E8A93A;
+    --yellow-bg:#FFF3D9;
+    --sky:#7EC8E9;
+    --sky-dk:#4AA9D6;
+    --coral:#FF6B6B;
+    --ink:#4A3B52;
+    --muted:#A491AC;
+    --line:#F3DCEA;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    font-family:'Gaegu', sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    min-height:100vh;
+    padding:16px;
+  }
+
+  .shell{
+    width:100%;
+    max-width:420px;
+    background: var(--card);
+    border-radius:30px;
+    padding:18px 16px 24px;
+    position:relative;
+    overflow:hidden;
+    box-shadow: 0 10px 30px rgba(180,120,200,0.18);
+    border:3px solid #fff;
+  }
+
+  .screen{ display:none; position:relative; z-index:1; }
+  .screen.active{ display:block; animation:fadein .25s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:none;} }
+
+  h1{
+    font-family:'Jua', sans-serif;
+    font-size:22px;
+    font-weight:400;
+    margin:2px 0 2px;
+    color:var(--pink-dk);
+    text-align:center;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:13px;
+    margin:0 0 14px;
+    text-align:center;
+  }
+
+  .pet-card{
+    background: linear-gradient(150deg, var(--pink-bg), var(--purple-bg));
+    border-radius:24px;
+    padding:16px;
+    margin-bottom:16px;
+    position:relative;
+    text-align:center;
+    border:2px dashed #fff;
+  }
+  .pet-bubble{
+    background:#fff;
+    border-radius:16px;
+    padding:6px 12px;
+    display:inline-block;
+    font-size:12px;
+    color:var(--pink-dk);
+    font-weight:700;
+    margin-bottom:6px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.04);
+  }
+  .pet-emoji{
+    font-size:64px;
+    line-height:1;
+    animation: idle-bounce 2.2s ease-in-out infinite;
+    display:inline-block;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,0.08));
+  }
+  .pet-emoji.acc-after{ font-size:28px; margin-left:2px; vertical-align:14px; }
+  @keyframes idle-bounce{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-6px) rotate(-3deg); }
+  }
+  .pet-name{
+    font-family:'Jua', sans-serif;
+    font-size:16px;
+    color:var(--ink);
+    margin-top:2px;
+  }
+  .pet-stats{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+  }
+  .lv-badge{
+    background:var(--pink);
+    color:#fff;
+    font-family:'Jua', sans-serif;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .xp-track{
+    flex:1;
+    height:10px;
+    background:rgba(255,255,255,0.7);
+    border-radius:8px;
+    overflow:hidden;
+    border:1.5px solid #fff;
+  }
+  .xp-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--mint), var(--sky));
+    border-radius:8px;
+    transition:width .4s ease;
+  }
+  .coin-badge{
+    background:var(--yellow);
+    color:#7A5300;
+    font-family:'Jua', sans-serif;
+    font-size:12px;
+    padding:5px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .deco-btn{
+    position:absolute;
+    top:12px; right:12px;
+    background:#fff;
+    border:none;
+    border-radius:14px;
+    padding:6px 10px;
+    font-size:12px;
+    font-family:'Jua', sans-serif;
+    color:var(--purple-dk);
+    cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,0.06);
+  }
+  .deco-btn:active{ transform:translateY(2px); box-shadow:none; }
+
+  .group-label{
+    font-size:13px;
+    color:var(--purple-dk);
+    font-weight:700;
+    margin:14px 0 8px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Jua', sans-serif;
+  }
+
+  .chips{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .chips.three{ grid-template-columns:1fr 1fr 1fr; }
+
+  .chip{
+    background:var(--bg1);
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:10px 6px;
+    color:var(--ink);
+    font-family:'Gaegu', sans-serif;
+    font-size:13px;
+    font-weight:700;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .15s ease, background .15s ease;
+    line-height:1.3;
+  }
+  .chip .big{ display:block; font-size:22px; margin-bottom:2px; }
+  .chip:active{ transform:scale(0.95); }
+  .chip.selected{
+    border-color:var(--pink);
+    background:var(--pink-bg);
+    color:var(--pink-dk);
+  }
+
+  .start-btn{
+    width:100%;
+    margin-top:18px;
+    padding:15px;
+    border:none;
+    border-radius:20px;
+    background: linear-gradient(120deg, var(--pink), var(--purple));
+    color:#fff;
+    font-family:'Jua', sans-serif;
+    font-size:17px;
+    cursor:pointer;
+    box-shadow: 0 5px 0 var(--pink-dk);
+  }
+  .start-btn:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--pink-dk); }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .back-btn{
+    background:var(--bg1);
+    border:none;
+    width:34px;height:34px;
+    border-radius:12px;
+    color:var(--ink);
+    font-size:16px;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mini-avatar-wrap{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--pink-bg);
+    border-radius:14px;
+    padding:4px 10px 4px 4px;
+  }
+  .mini-avatar{
+    font-size:22px;
+    display:inline-block;
+  }
+  .mini-avatar.bounce{ animation: mini-bounce .5s ease; }
+  .mini-avatar.shake{ animation: mini-shake .4s ease; }
+  @keyframes mini-bounce{
+    0%{ transform:scale(1); } 40%{ transform:scale(1.35) rotate(-8deg); } 100%{ transform:scale(1); }
+  }
+  @keyframes mini-shake{
+    0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-4px) rotate(-6deg); } 75%{ transform:translateX(4px) rotate(6deg); }
+  }
+  .stat-pills{ display:flex; gap:6px; }
+  .pill{
+    background:var(--bg1);
+    border-radius:12px;
+    padding:6px 10px;
+    font-size:12px;
+    color:var(--muted);
+    font-weight:700;
+  }
+  .pill b{ color:var(--ink); }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
+  }
+
+  .tile{
+    aspect-ratio:3/4;
+    perspective:600px;
+    cursor:pointer;
+  }
+  .tile-inner{
+    position:relative;
+    width:100%;height:100%;
+    transform-style:preserve-3d;
+    transition:transform .35s cubic-bezier(.2,.8,.3,1);
+  }
+  .tile.flipped .tile-inner{ transform:rotateY(180deg); }
+  .tile.matched .tile-inner{ transform:rotateY(180deg); }
+  .tile-face{
+    position:absolute; inset:0;
+    border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    backface-visibility:hidden;
+    padding:4px;
+    text-align:center;
+  }
+  .tile-back{
+    background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg));
+    border:2px solid #fff;
+  }
+  .tile-back::after{
+    content:"★";
+    font-size:16px;
+    color:var(--purple-dk);
+    opacity:.6;
+  }
+  .tile-front{
+    background:#fff;
+    color:var(--ink);
+    transform:rotateY(180deg);
+    font-weight:700;
+    font-size:12px;
+    line-height:1.25;
+    word-break:keep-all;
+    border:2px solid var(--pink-bg);
+  }
+  .tile-front.jp{ font-size:14px; }
+  .tile-front.kr{ font-size:12px; color:var(--purple-dk); }
+  .tile.matched .tile-front{
+    background:var(--mint);
+    color:#0B4B3C;
+    border-color:var(--mint-dk);
+  }
+  .tile.wrong .tile-front{
+    background:var(--coral);
+    color:#fff;
+    border-color:#C23D3D;
+  }
+
+  .quiz-card{
+    background: linear-gradient(150deg, var(--purple-bg), var(--pink-bg));
+    border-radius:22px;
+    padding:30px 16px;
+    text-align:center;
+    margin-bottom:16px;
+    position:relative;
+    overflow:hidden;
+    border:2px solid #fff;
+  }
+  .quiz-timerbar{
+    position:absolute; top:0; left:0; height:5px;
+    background:var(--coral);
+    width:100%;
+    border-radius:0 0 6px 6px;
+  }
+  .quiz-word{
+    font-family:'Baloo 2','Gaegu', sans-serif;
+    font-size:30px;
+    font-weight:700;
+    color:var(--ink);
+    word-break:break-word;
+  }
+  .quiz-romaji{
+    font-size:13px;
+    color:var(--purple-dk);
+    margin-top:6px;
+    font-weight:700;
+  }
+
+  .answers{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .answer-btn{
+    background:var(--bg1);
+    border:2px solid transparent;
+    border-radius:16px;
+    padding:15px 8px;
+    color:var(--ink);
+    font-family:'Gaegu', sans-serif;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    transition:transform .1s ease;
+  }
+  .answer-btn:active{ transform:scale(0.96); }
+  .answer-btn.correct{ background:var(--mint-bg); border-color:var(--mint-dk); color:#0B4B3C; }
+  .answer-btn.wrong{ background:#FFE3E3; border-color:var(--coral); color:#B23A3A; }
+
+  .streak-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:14px;
+    background:var(--yellow-bg);
+    border-radius:14px;
+    padding:9px 14px;
+  }
+  .streak-label{ font-size:12px; color:var(--yellow-dk); font-weight:700; }
+  .streak-track{
+    flex:1;
+    height:8px;
+    background:rgba(255,255,255,0.7);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .streak-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--yellow), var(--coral));
+    border-radius:6px;
+    transition:width .25s ease;
+  }
+  .streak-num{ font-family:'Jua', sans-serif; font-size:14px; color:var(--yellow-dk); min-width:20px; text-align:right; }
+
+  .result-emoji{
+    font-size:56px;
+    text-align:center;
+    margin:6px 0 6px;
+    animation: idle-bounce 1.6s ease-in-out infinite;
+  }
+  .result-title{
+    font-family:'Jua', sans-serif;
+    font-size:20px;
+    text-align:center;
+    color:var(--pink-dk);
+    margin-bottom:2px;
+  }
+  .result-sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:14px;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .stat-card{
+    background:var(--bg1);
+    border-radius:16px;
+    padding:12px;
+    text-align:center;
+  }
+  .stat-card .v{
+    font-family:'Jua', sans-serif;
+    font-size:20px;
+    color:var(--pink-dk);
+  }
+  .stat-card .l{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+    font-weight:700;
+  }
+  .reward-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .reward-chip{
+    background:var(--mint-bg);
+    color:#0B4B3C;
+    font-family:'Jua', sans-serif;
+    font-size:13px;
+    padding:6px 14px;
+    border-radius:20px;
+  }
+  .reward-chip.coin{ background:var(--yellow-bg); color:#7A5300; }
+
+  .result-buttons{ display:flex; gap:8px; }
+  .result-buttons button{
+    flex:1;
+    padding:14px;
+    border-radius:16px;
+    border:none;
+    font-family:'Jua', sans-serif;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .btn-primary{ background: linear-gradient(120deg, var(--pink), var(--purple)); color:#fff; box-shadow:0 4px 0 var(--pink-dk); }
+  .btn-primary:active{ transform:translateY(3px); box-shadow:none; }
+  .btn-ghost{ background:var(--bg1); color:var(--ink); }
+  .btn-ghost:active{ transform:scale(0.97); }
+
+  .shop-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .shop-item{
+    background:var(--bg1);
+    border-radius:16px;
+    padding:14px 8px;
+    text-align:center;
+    border:2px solid transparent;
+    cursor:pointer;
+  }
+  .shop-item .ic{ font-size:28px; display:block; margin-bottom:4px; }
+  .shop-item .nm{ font-family:'Jua', sans-serif; font-size:12px; color:var(--ink); }
+  .shop-item .pr{ font-size:11px; color:var(--yellow-dk); font-weight:700; margin-top:2px; }
+  .shop-item.owned{ border-color:var(--mint-dk); background:var(--mint-bg); }
+  .shop-item.equipped{ border-color:var(--pink); background:var(--pink-bg); }
+  .shop-item.locked{ opacity:.55; }
+
+  .toast{
+    position:absolute;
+    top:14px; left:50%;
+    transform:translateX(-50%);
+    background:#fff;
+    padding:8px 16px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:700;
+    font-family:'Jua', sans-serif;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:20;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(6px); }
+  .toast.good{ color:var(--mint-dk); }
+  .toast.bad{ color:var(--coral); }
+
+  .levelup-overlay{
+    position:absolute; inset:0;
+    background:rgba(255,246,251,0.96);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:30;
+    border-radius:30px;
+    text-align:center;
+    padding:20px;
+  }
+  .levelup-overlay.show{ display:flex; }
+  .levelup-emoji{ font-size:70px; animation: lvl-pop .6s ease; }
+  @keyframes lvl-pop{
+    0%{ transform:scale(0.3); opacity:0; } 60%{ transform:scale(1.2); opacity:1; } 100%{ transform:scale(1); }
+  }
+  .levelup-title{ font-family:'Jua', sans-serif; font-size:24px; color:var(--pink-dk); margin:10px 0 2px; }
+  .levelup-sub{ font-size:14px; color:var(--purple-dk); font-weight:700; margin-bottom:18px; }
+  .levelup-btn{
+    background: linear-gradient(120deg, var(--pink), var(--purple));
+    color:#fff;
+    border:none;
+    padding:12px 26px;
+    border-radius:18px;
+    font-family:'Jua', sans-serif;
+    font-size:14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--pink-dk);
+  }
+  .confetti-piece{
+    position:absolute;
+    top:-10px;
+    width:8px; height:8px;
+    border-radius:2px;
+    animation: confetti-fall linear forwards;
+    z-index:31;
+  }
+  @keyframes confetti-fall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(340px) rotate(400deg); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell" id="shell">
+
+  <div class="toast" id="toast"></div>
+  <div class="levelup-overlay" id="levelup-overlay">
+    <div class="levelup-emoji" id="levelup-emoji">🎉</div>
+    <div class="levelup-title" id="levelup-title">레벨업!</div>
+    <div class="levelup-sub" id="levelup-sub">콩콩이가 한 단계 성장했어요</div>
+    <button class="levelup-btn" id="levelup-btn">신난다! ✨</button>
+  </div>
+
+  <div class="screen active" id="screen-home">
+    <h1>콩콩이의 단어 모험</h1>
+    <p class="sub">게임을 하면서 내 친구를 키워봐요</p>
+
+    <div class="pet-card">
+      <button class="deco-btn" id="open-shop">✨ 꾸미기</button>
+      <div class="pet-bubble" id="pet-bubble">오늘도 같이 공부하자!</div><br>
+      <span class="pet-emoji" id="pet-emoji">🥚</span><span class="pet-emoji acc-after" id="pet-accessory"></span>
+      <div class="pet-name" id="pet-name">콩콩 알</div>
+      <div class="pet-stats">
+        <span class="lv-badge" id="pet-level">Lv.1</span>
+        <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
+        <span class="coin-badge" id="coin-badge">🪙 0</span>
+      </div>
+    </div>
+
+    <div class="group-label">🌐 언어 선택</div>
+    <div class="chips" id="lang-chips">
+      <div class="chip selected" data-lang="en"><span class="big">🇬🇧</span>영어</div>
+      <div class="chip" data-lang="ja"><span class="big">🇯🇵</span>일본어</div>
+    </div>
+
+    <div class="group-label">🎮 게임 모드</div>
+    <div class="chips three" id="mode-chips">
+      <div class="chip selected" data-mode="match"><span class="big">🃏</span>카드 짝맞추기</div>
+      <div class="chip" data-mode="quiz"><span class="big">⚡</span>스피드 퀴즈</div>
+      <div class="chip" data-mode="blank"><span class="big">🔤</span>빈칸 채우기</div>
+    </div>
+
+    <div class="group-label">🌱 단계 선택</div>
+    <div class="chips three" id="level-chips">
+      <div class="chip selected" data-level="1">1단계<br><span style="color:var(--muted); font-size:11px;">쉬워요</span></div>
+      <div class="chip" data-level="2">2단계<br><span style="color:var(--muted); font-size:11px;">보통</span></div>
+      <div class="chip" data-level="3">3단계<br><span style="color:var(--muted); font-size:11px;">어려워요</span></div>
+    </div>
+
+    <button class="start-btn" id="start-btn">게임 시작! 🚀</button>
+  </div>
+
+  <div class="screen" id="screen-shop">
+    <div class="topbar">
+      <button class="back-btn" id="shop-back">←</button>
+      <div class="stat-pills"><div class="pill">🪙 <b id="shop-coins">0</b></div></div>
+    </div>
+    <div class="pet-card" style="margin-bottom:18px;">
+      <span class="pet-emoji" id="shop-pet-emoji">🥚</span><span class="pet-emoji acc-after" id="shop-pet-accessory"></span>
+      <div class="pet-name" id="shop-pet-name">콩콩 알</div>
+    </div>
+    <div class="group-label">🛍️ 코인으로 꾸며주기</div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </div>
+
+  <div class="screen" id="screen-match">
+    <div class="topbar">
+      <button class="back-btn" id="match-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-match">🥚</span></div>
+      <div class="stat-pills">
+        <div class="pill">⏱ <b id="match-time">00:00</b></div>
+        <div class="pill">짝 <b id="match-pairs">0/0</b></div>
+      </div>
+    </div>
+    <div class="grid" id="match-grid"></div>
+  </div>
+
+  <div class="screen" id="screen-quiz">
+    <div class="topbar">
+      <button class="back-btn" id="quiz-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-quiz">🥚</span></div>
+      <div class="stat-pills">
+        <div class="pill" id="quiz-progress">1/10</div>
+        <div class="pill">점수 <b id="quiz-score">0</b></div>
+      </div>
+    </div>
+
+    <div class="streak-bar">
+      <span class="streak-label">콤보</span>
+      <div class="streak-track"><div class="streak-fill" id="streak-fill"></div></div>
+      <span class="streak-num" id="streak-num">0</span>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-timerbar" id="quiz-timerbar"></div>
+      <div class="quiz-word" id="quiz-word">word</div>
+      <div class="quiz-romaji" id="quiz-romaji"></div>
+    </div>
+
+    <div class="answers" id="quiz-answers"></div>
+  </div>
+
+  <div class="screen" id="screen-blank">
+    <div class="topbar">
+      <button class="back-btn" id="blank-back">←</button>
+      <div class="mini-avatar-wrap"><span class="mini-avatar" id="mini-avatar-blank">🥚</span></div>
+      <div class="stat-pills">
+        <div class="pill" id="blank-progress">1/10</div>
+        <div class="pill">점수 <b id="blank-score">0</b></div>
+      </div>
+    </div>
+
+    <div class="streak-bar">
+      <span class="streak-label">콤보</span>
+      <div class="streak-track"><div class="streak-fill" id="blank-streak-fill"></div></div>
+      <span class="streak-num" id="blank-streak-num">0</span>
+    </div>
+
+    <div class="quiz-card">
+      <div class="quiz-timerbar" id="blank-timerbar"></div>
+      <div class="quiz-word" id="blank-word">w_rd</div>
+      <div class="quiz-romaji" id="blank-meaning"></div>
+    </div>
+
+    <div class="answers" id="blank-answers"></div>
+  </div>
+
+  <div class="screen" id="screen-result">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-title" id="result-title">완료!</div>
+    <div class="result-sub" id="result-sub">잘했어요</div>
+    <div class="stat-grid" id="result-stats"></div>
+    <div class="reward-row">
+      <span class="reward-chip">✨ XP +<span id="reward-xp">0</span></span>
+      <span class="reward-chip coin">🪙 +<span id="reward-coin">0</span></span>
+    </div>
+    <div class="result-buttons">
+      <button class="btn-ghost" id="result-home">메인으로</button>
+      <button class="btn-primary" id="result-retry">다시하기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+var wordBank = {
+  en: {
+    1: [
+      {w:"apple", m:"사과"},{w:"book", m:"책"},{w:"water", m:"물"},{w:"house", m:"집"},
+      {w:"dog", m:"개"},{w:"cat", m:"고양이"},{w:"sun", m:"태양"},{w:"moon", m:"달"},
+      {w:"star", m:"별"},{w:"tree", m:"나무"},{w:"flower", m:"꽃"},{w:"chair", m:"의자"},
+      {w:"table", m:"테이블"},{w:"window", m:"창문"},{w:"door", m:"문"},{w:"phone", m:"전화기"},
+      {w:"computer", m:"컴퓨터"},{w:"shoe", m:"신발"},{w:"hat", m:"모자"},{w:"bag", m:"가방"}
+    ],
+    2: [
+      {w:"mountain", m:"산"},{w:"river", m:"강"},{w:"bridge", m:"다리"},{w:"forest", m:"숲"},
+      {w:"island", m:"섬"},{w:"cloud", m:"구름"},{w:"desert", m:"사막"},{w:"ocean", m:"바다"},
+      {w:"valley", m:"계곡"},{w:"thunder", m:"천둥"},{w:"beach", m:"해변"},{w:"volcano", m:"화산"},
+      {w:"waterfall", m:"폭포"},{w:"cave", m:"동굴"},{w:"harbor", m:"항구"},{w:"meadow", m:"초원"},
+      {w:"cliff", m:"절벽"},{w:"glacier", m:"빙하"},{w:"canyon", m:"협곡"},{w:"swamp", m:"늪"}
+    ],
+    3: [
+      {w:"achieve", m:"성취하다"},{w:"hesitate", m:"망설이다"},{w:"generous", m:"관대한"},
+      {w:"ancient", m:"고대의"},{w:"fragile", m:"부서지기 쉬운"},{w:"curious", m:"호기심 많은"},
+      {w:"abundant", m:"풍부한"},{w:"reluctant", m:"꺼리는"},{w:"diligent", m:"부지런한"},
+      {w:"humble", m:"겸손한"},{w:"resilient", m:"회복력 있는"},{w:"profound", m:"심오한"},
+      {w:"ambiguous", m:"모호한"},{w:"meticulous", m:"꼼꼼한"},{w:"inevitable", m:"불가피한"},
+      {w:"eloquent", m:"웅변적인"},{w:"benevolent", m:"자비로운"},{w:"tenacious", m:"끈기있는"},
+      {w:"versatile", m:"다재다능한"},{w:"candid", m:"솔직한"}
+    ]
+  },
+  ja: {
+    1: [
+      {w:"りんご", r:"ringo", m:"사과"},{w:"ほん", r:"hon", m:"책"},{w:"みず", r:"mizu", m:"물"},
+      {w:"いえ", r:"ie", m:"집"},{w:"いぬ", r:"inu", m:"개"},{w:"ねこ", r:"neko", m:"고양이"},
+      {w:"たいよう", r:"taiyou", m:"태양"},{w:"つき", r:"tsuki", m:"달"},{w:"ほし", r:"hoshi", m:"별"},
+      {w:"き", r:"ki", m:"나무"},{w:"はな", r:"hana", m:"꽃"},{w:"いす", r:"isu", m:"의자"},
+      {w:"つくえ", r:"tsukue", m:"책상"},{w:"まど", r:"mado", m:"창문"},{w:"どあ", r:"doa", m:"문"},
+      {w:"でんわ", r:"denwa", m:"전화"},{w:"くつ", r:"kutsu", m:"신발"},{w:"ぼうし", r:"boushi", m:"모자"},
+      {w:"かばん", r:"kaban", m:"가방"},{w:"かさ", r:"kasa", m:"우산"}
+    ],
+    2: [
+      {w:"やま", r:"yama", m:"산"},{w:"かわ", r:"kawa", m:"강"},{w:"はし", r:"hashi", m:"다리"},
+      {w:"もり", r:"mori", m:"숲"},{w:"しま", r:"shima", m:"섬"},{w:"くも", r:"kumo", m:"구름"},
+      {w:"さばく", r:"sabaku", m:"사막"},{w:"うみ", r:"umi", m:"바다"},{w:"たに", r:"tani", m:"계곡"},
+      {w:"かみなり", r:"kaminari", m:"천둥"},{w:"はまべ", r:"hamabe", m:"해변"},{w:"かざん", r:"kazan", m:"화산"},
+      {w:"たき", r:"taki", m:"폭포"},{w:"どうくつ", r:"doukutsu", m:"동굴"},{w:"みなと", r:"minato", m:"항구"},
+      {w:"そうげん", r:"sougen", m:"초원"},{w:"がけ", r:"gake", m:"절벽"},{w:"ひょうが", r:"hyouga", m:"빙하"},
+      {w:"きょうこく", r:"kyoukoku", m:"협곡"},{w:"ぬま", r:"numa", m:"늪"}
+    ],
+    3: [
+      {w:"挑戦", r:"chousen", m:"도전"},{w:"努力", r:"doryoku", m:"노력"},{w:"経験", r:"keiken", m:"경험"},
+      {w:"成長", r:"seichou", m:"성장"},{w:"目標", r:"mokuhyou", m:"목표"},{w:"諦める", r:"akirameru", m:"포기하다"},
+      {w:"信頼", r:"shinrai", m:"신뢰"},{w:"責任", r:"sekinin", m:"책임"},{w:"成功", r:"seikou", m:"성공"},
+      {w:"失敗", r:"shippai", m:"실패"},{w:"感謝", r:"kansha", m:"감사"},{w:"挑む", r:"idomu", m:"도전하다"},
+      {w:"曖昧", r:"aimai", m:"모호한"},{w:"几帳面", r:"kichoumen", m:"꼼꼼한"},{w:"必然", r:"hitsuzen", m:"필연"},
+      {w:"雄弁", r:"yuuben", m:"웅변"},{w:"寛大", r:"kandai", m:"관대한"},{w:"忍耐強い", r:"nintaizuyoi", m:"끈기있는"},
+      {w:"多才", r:"tasai", m:"다재다능한"},{w:"率直", r:"sotchoku", m:"솔직한"}
+    ]
+  }
+};
+
+var state = { lang:"en", mode:"match", level:1 };
+
+var stages = [
+  {emoji:"🥚", name:"콩콩 알"},
+  {emoji:"🐣", name:"삐약이"},
+  {emoji:"🐥", name:"방글이"},
+  {emoji:"🦊", name:"여우 콩콩이"},
+  {emoji:"🦄", name:"반짝이 콩콩이"},
+  {emoji:"🐉", name:"레인보우 콩콩이"}
+];
+
+var accessories = [
+  {id:"ribbon", ic:"🎀", nm:"리본", price:20},
+  {id:"glasses", ic:"🕶️", nm:"선글라스", price:30},
+  {id:"crown", ic:"👑", nm:"왕관", price:60},
+  {id:"hat", ic:"🎩", nm:"모자", price:40},
+  {id:"flower", ic:"🌸", nm:"꽃", price:25},
+  {id:"star", ic:"⭐", nm:"별 스티커", price:15}
+];
+
+var player = { level:1, xp:0, coins:0, owned:[], equipped:null };
+
+var SAVE_KEY = "kongkong_save_v1";
+function savePlayer(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify(player));
+  }catch(e){ /* storage unavailable, ignore */ }
+}
+function loadPlayer(){
+  try{
+    var raw = localStorage.getItem(SAVE_KEY);
+    if(raw){
+      var saved = JSON.parse(raw);
+      player.level = saved.level || 1;
+      player.xp = saved.xp || 0;
+      player.coins = saved.coins || 0;
+      player.owned = saved.owned || [];
+      player.equipped = saved.equipped || null;
+    }
+  }catch(e){ /* storage unavailable or corrupt, start fresh */ }
+}
+
+function xpNeeded(level){ return 80 + (level-1)*25; }
+function currentStageIndex(){ return Math.min(stages.length-1, Math.floor((player.level-1)/3)); }
+
+function $(id){ return document.getElementById(id); }
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(function(s){ s.classList.remove("active"); });
+  $(id).classList.add("active");
+}
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+function toast(msg, good){
+  var t = $("toast");
+  t.textContent = msg;
+  t.className = "toast show " + (good ? "good" : "bad");
+  setTimeout(function(){ t.className = "toast"; }, 900);
+}
+
+function reactCharacter(good){
+  document.querySelectorAll(".screen.active .mini-avatar").forEach(function(el){
+    el.classList.remove("bounce","shake");
+    void el.offsetWidth;
+    el.classList.add(good ? "bounce" : "shake");
+  });
+}
+
+function accessoryEmoji(){
+  if(!player.equipped) return "";
+  var found = accessories.filter(function(a){ return a.id === player.equipped; })[0];
+  return found ? found.ic : "";
+}
+
+function renderPet(){
+  var idx = currentStageIndex();
+  var stage = stages[idx];
+  var accEmoji = accessoryEmoji();
+
+  $("pet-emoji").textContent = stage.emoji;
+  $("pet-accessory").textContent = accEmoji;
+  $("pet-name").textContent = stage.name;
+  $("pet-level").textContent = "Lv." + player.level;
+  $("coin-badge").textContent = "🪙 " + player.coins;
+  $("xp-fill").style.width = Math.round((player.xp / xpNeeded(player.level)) * 100) + "%";
+
+  $("shop-pet-emoji").textContent = stage.emoji;
+  $("shop-pet-accessory").textContent = accEmoji;
+  $("shop-pet-name").textContent = stage.name;
+  $("shop-coins").textContent = player.coins;
+
+  document.querySelectorAll(".mini-avatar").forEach(function(el){
+    el.textContent = stage.emoji;
+  });
+}
+
+function addRewards(xpGain, coinGain, cb){
+  player.coins += coinGain;
+  player.xp += xpGain;
+  var leveledUp = false;
+  var oldStage = currentStageIndex();
+  while(player.xp >= xpNeeded(player.level)){
+    player.xp -= xpNeeded(player.level);
+    player.level++;
+    leveledUp = true;
+  }
+  renderPet();
+  savePlayer();
+  if(leveledUp){
+    var newStage = currentStageIndex();
+    showLevelUp(newStage > oldStage);
+  }
+  if(cb) cb();
+}
+
+function showLevelUp(evolved){
+  var stage = stages[currentStageIndex()];
+  $("levelup-emoji").textContent = evolved ? stage.emoji : "🎉";
+  $("levelup-title").textContent = evolved ? "진화했어요!" : "레벨업!";
+  $("levelup-sub").textContent = evolved ? (stage.name + "(으)로 성장했어요!") : ("Lv." + player.level + "이 되었어요!");
+  spawnConfetti();
+  $("levelup-overlay").classList.add("show");
+}
+
+function spawnConfetti(){
+  var colors = ["#FF8FAE","#B79CED","#6FE0C0","#FFD166","#7EC8E9"];
+  var overlay = $("levelup-overlay");
+  for(var i=0;i<18;i++){
+    var p = document.createElement("div");
+    p.className = "confetti-piece";
+    p.style.left = (Math.random()*100) + "%";
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (1 + Math.random()*0.8) + "s";
+    p.style.animationDelay = (Math.random()*0.3) + "s";
+    overlay.appendChild(p);
+    (function(el){ setTimeout(function(){ el.remove(); }, 2200); })(p);
+  }
+}
+
+$("levelup-btn").addEventListener("click", function(){
+  $("levelup-overlay").classList.remove("show");
+});
+
+document.querySelectorAll("#lang-chips .chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    document.querySelectorAll("#lang-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+    c.classList.add("selected");
+    state.lang = c.dataset.lang;
+  });
+});
+document.querySelectorAll("#mode-chips .chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    document.querySelectorAll("#mode-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+    c.classList.add("selected");
+    state.mode = c.dataset.mode;
+  });
+});
+document.querySelectorAll("#level-chips .chip").forEach(function(c){
+  c.addEventListener("click", function(){
+    document.querySelectorAll("#level-chips .chip").forEach(function(x){ x.classList.remove("selected"); });
+    c.classList.add("selected");
+    state.level = parseInt(c.dataset.level, 10);
+  });
+});
+
+$("start-btn").addEventListener("click", function(){
+  if(state.mode === "match"){ startMatch(); }
+  else if(state.mode === "quiz"){ startQuiz(); }
+  else { startBlank(); }
+});
+
+$("open-shop").addEventListener("click", function(){ renderShop(); showScreen("screen-shop"); });
+$("shop-back").addEventListener("click", function(){ showScreen("screen-home"); });
+
+function renderShop(){
+  var grid = $("shop-grid");
+  grid.innerHTML = "";
+  accessories.forEach(function(a){
+    var owned = player.owned.indexOf(a.id) !== -1;
+    var equipped = player.equipped === a.id;
+    var item = document.createElement("div");
+    item.className = "shop-item" + (owned ? " owned" : "") + (equipped ? " equipped" : "") + (!owned && player.coins < a.price ? " locked" : "");
+    item.innerHTML = '<span class="ic">'+a.ic+'</span><span class="nm">'+a.nm+'</span><span class="pr">'+(owned ? (equipped ? "착용중" : "탭해서 착용") : ("🪙 "+a.price))+'</span>';
+    item.addEventListener("click", function(){
+      if(owned){
+        player.equipped = equipped ? null : a.id;
+        renderPet();
+        savePlayer();
+        renderShop();
+      } else if(player.coins >= a.price){
+        player.coins -= a.price;
+        player.owned.push(a.id);
+        player.equipped = a.id;
+        toast(a.nm + " 획득!", true);
+        renderPet();
+        savePlayer();
+        renderShop();
+      } else {
+        toast("코인이 부족해요", false);
+      }
+    });
+    grid.appendChild(item);
+  });
+}
+
+var mg = { tiles:[], flipped:[], matched:0, total:0, moves:0, timer:null, seconds:0, lock:false };
+
+function startMatch(){
+  var deck = wordBank[state.lang][state.level];
+  var pairCount = state.level===1?8:(state.level===2?10:12);
+  var chosen = shuffle(deck).slice(0, pairCount);
+
+  mg.tiles = [];
+  mg.flipped = [];
+  mg.matched = 0;
+  mg.total = chosen.length;
+  mg.moves = 0;
+  mg.seconds = 0;
+  mg.lock = false;
+
+  var items = [];
+  chosen.forEach(function(pair, idx){
+    items.push({pairId:idx, type:"word", text:pair.w, isJp: state.lang==="ja"});
+    items.push({pairId:idx, type:"meaning", text:pair.m, isJp:false});
+  });
+  mg.tiles = shuffle(items);
+
+  var grid = $("match-grid");
+  grid.innerHTML = "";
+  mg.tiles.forEach(function(item, i){
+    var tile = document.createElement("div");
+    tile.className = "tile";
+    tile.dataset.index = i;
+    var frontClass = item.isJp ? "tile-front jp" : (item.type==="meaning" ? "tile-front kr" : "tile-front");
+    tile.innerHTML =
+      '<div class="tile-inner">' +
+        '<div class="tile-face tile-back"></div>' +
+        '<div class="tile-face ' + frontClass + '">' + item.text + '</div>' +
+      '</div>';
+    tile.addEventListener("click", function(){ flipTile(i); });
+    grid.appendChild(tile);
+  });
+
+  $("match-time").textContent = "00:00";
+  $("match-pairs").textContent = "0/" + mg.total;
+  renderPet();
+
+  clearInterval(mg.timer);
+  mg.timer = setInterval(function(){
+    mg.seconds++;
+    var m = Math.floor(mg.seconds/60), s = mg.seconds%60;
+    $("match-time").textContent = (m<10?"0":"")+m + ":" + (s<10?"0":"")+s;
+  }, 1000);
+
+  showScreen("screen-match");
+}
+
+function flipTile(i){
+  if(mg.lock) return;
+  var el = $("match-grid").children[i];
+  if(el.classList.contains("flipped") || el.classList.contains("matched")) return;
+  if(mg.flipped.length >= 2) return;
+
+  el.classList.add("flipped");
+  mg.flipped.push(i);
+
+  if(mg.flipped.length === 2){
+    mg.moves++;
+    mg.lock = true;
+    var a = mg.tiles[mg.flipped[0]], b = mg.tiles[mg.flipped[1]];
+    var elA = $("match-grid").children[mg.flipped[0]];
+    var elB = $("match-grid").children[mg.flipped[1]];
+
+    if(a.pairId === b.pairId && a.type !== b.type){
+      setTimeout(function(){
+        elA.classList.add("matched");
+        elB.classList.add("matched");
+        mg.matched++;
+        $("match-pairs").textContent = mg.matched + "/" + mg.total;
+        reactCharacter(true);
+        mg.flipped = [];
+        mg.lock = false;
+        if(mg.matched === mg.total){
+          clearInterval(mg.timer);
+          setTimeout(finishMatch, 500);
+        }
+      }, 350);
+    } else {
+      elA.classList.add("wrong");
+      elB.classList.add("wrong");
+      reactCharacter(false);
+      setTimeout(function(){
+        elA.classList.remove("flipped","wrong");
+        elB.classList.remove("flipped","wrong");
+        mg.flipped = [];
+        mg.lock = false;
+      }, 700);
+    }
+  }
+}
+
+function finishMatch(){
+  var score = Math.max(0, 1000 - (mg.moves - mg.total) * 15 - mg.seconds * 3);
+  var xpGain = mg.total * 8;
+  var coinGain = mg.total * 3;
+  showResult({
+    emoji:"🃏",
+    title: "짝맞추기 완료!",
+    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
+    stats: [
+      {v: mg.seconds + "초", l:"걸린 시간"},
+      {v: mg.moves, l:"시도 횟수"},
+      {v: mg.total, l:"맞춘 짝"},
+      {v: score, l:"점수"}
+    ]
+  }, xpGain, coinGain);
+}
+
+$("match-back").addEventListener("click", function(){
+  clearInterval(mg.timer);
+  showScreen("screen-home");
+});
+
+var qz = { deck:[], order:[], idx:0, score:0, streak:0, best:0, correct:0, total:10, timer:null, duration:8000 };
+
+function startQuiz(){
+  var deck = wordBank[state.lang][state.level];
+  qz.deck = deck;
+  qz.total = Math.min(10, deck.length);
+  qz.order = shuffle(deck).slice(0, qz.total);
+  qz.idx = 0;
+  qz.score = 0;
+  qz.streak = 0;
+  qz.best = 0;
+  qz.correct = 0;
+
+  $("quiz-score").textContent = "0";
+  renderPet();
+  showScreen("screen-quiz");
+  nextQuestion();
+}
+
+function nextQuestion(){
+  clearInterval(qz.timer);
+  if(qz.idx >= qz.total){ finishQuiz(); return; }
+
+  var item = qz.order[qz.idx];
+  $("quiz-progress").textContent = (qz.idx+1) + "/" + qz.total;
+  $("quiz-word").textContent = item.w;
+  $("quiz-romaji").textContent = item.r ? item.r : "";
+
+  var wrongPool = qz.deck.filter(function(d){ return d.m !== item.m; });
+  wrongPool = shuffle(wrongPool).slice(0,3).map(function(d){ return d.m; });
+  var options = shuffle([item.m].concat(wrongPool));
+
+  var box = $("quiz-answers");
+  box.innerHTML = "";
+  options.forEach(function(opt){
+    var btn = document.createElement("div");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.addEventListener("click", function(){ answerQuestion(opt === item.m, btn, item.m); });
+    box.appendChild(btn);
+  });
+
+  $("quiz-timerbar").style.width = "100%";
+  $("quiz-timerbar").style.transition = "none";
+  requestAnimationFrame(function(){
+    $("quiz-timerbar").style.transition = "width " + (qz.duration/1000) + "s linear";
+    $("quiz-timerbar").style.width = "0%";
+  });
+  qz.timer = setTimeout(function(){ answerQuestion(false, null, item.m); }, qz.duration);
+}
+
+function answerQuestion(isCorrect, btnEl, correctText){
+  clearTimeout(qz.timer);
+  var buttons = document.querySelectorAll("#quiz-answers .answer-btn");
+  buttons.forEach(function(b){
+    b.style.pointerEvents = "none";
+    if(b.textContent === correctText) b.classList.add("correct");
+  });
+  if(!isCorrect && btnEl) btnEl.classList.add("wrong");
+  reactCharacter(isCorrect);
+
+  if(isCorrect){
+    qz.streak++;
+    qz.best = Math.max(qz.best, qz.streak);
+    qz.correct++;
+    var gain = 10 + qz.streak * 2;
+    qz.score += gain;
+    toast("+" + gain + " 정답!", true);
+  } else {
+    qz.streak = 0;
+    toast("아쉬워요", false);
+  }
+  $("quiz-score").textContent = qz.score;
+  $("streak-num").textContent = qz.streak;
+  $("streak-fill").style.width = Math.min(100, qz.streak * 20) + "%";
+
+  qz.idx++;
+  setTimeout(nextQuestion, 850);
+}
+
+function finishQuiz(){
+  var xpGain = qz.correct * 10 + qz.best * 2;
+  var coinGain = qz.correct * 3;
+  showResult({
+    emoji:"⚡",
+    title: "스피드 퀴즈 완료!",
+    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
+    stats: [
+      {v: qz.score, l:"최종 점수"},
+      {v: qz.correct + "/" + qz.total, l:"정답 수"},
+      {v: qz.best, l:"최고 콤보"},
+      {v: Math.round(qz.correct/qz.total*100) + "%", l:"정답률"}
+    ]
+  }, xpGain, coinGain);
+}
+
+$("quiz-back").addEventListener("click", function(){
+  clearTimeout(qz.timer);
+  showScreen("screen-home");
+});
+
+var bg = { deck:[], order:[], idx:0, score:0, streak:0, best:0, correct:0, total:10, timer:null, duration:8000, pool:[] };
+
+function buildBlankPool(deck){
+  var set = {};
+  deck.forEach(function(d){
+    Array.from(d.w).forEach(function(ch){ set[ch] = true; });
+  });
+  return Object.keys(set);
+}
+
+function startBlank(){
+  var deck = wordBank[state.lang][state.level];
+  bg.deck = deck;
+  bg.pool = buildBlankPool(deck);
+  bg.total = Math.min(10, deck.length);
+  bg.order = shuffle(deck).slice(0, bg.total);
+  bg.idx = 0;
+  bg.score = 0;
+  bg.streak = 0;
+  bg.best = 0;
+  bg.correct = 0;
+
+  $("blank-score").textContent = "0";
+  renderPet();
+  showScreen("screen-blank");
+  nextBlank();
+}
+
+function nextBlank(){
+  clearTimeout(bg.timer);
+  if(bg.idx >= bg.total){ finishBlank(); return; }
+
+  var item = bg.order[bg.idx];
+  var chars = Array.from(item.w);
+  var pos = Math.floor(Math.random() * chars.length);
+  var correctChar = chars[pos];
+  var displayChars = chars.slice();
+  displayChars[pos] = "＿";
+  var displayWord = displayChars.join("");
+
+  $("blank-progress").textContent = (bg.idx+1) + "/" + bg.total;
+  $("blank-word").textContent = displayWord;
+  $("blank-meaning").textContent = item.m;
+
+  var distractorPool = bg.pool.filter(function(c){ return c !== correctChar; });
+  var distractors = shuffle(distractorPool).slice(0,3);
+  var fallback = state.lang === "en" ? "abcdefghijklmnopqrstuvwxyz".split("") : bg.pool;
+  var guard = 0;
+  while(distractors.length < 3 && guard < 50){
+    var r = fallback[Math.floor(Math.random()*fallback.length)];
+    if(r !== correctChar && distractors.indexOf(r) === -1) distractors.push(r);
+    guard++;
+  }
+  var options = shuffle([correctChar].concat(distractors));
+
+  var box = $("blank-answers");
+  box.innerHTML = "";
+  options.forEach(function(opt){
+    var btn = document.createElement("div");
+    btn.className = "answer-btn";
+    btn.textContent = opt;
+    btn.style.fontSize = state.lang === "ja" ? "18px" : "16px";
+    btn.addEventListener("click", function(){ answerBlank(opt === correctChar, btn, correctChar, item.w); });
+    box.appendChild(btn);
+  });
+
+  $("blank-timerbar").style.width = "100%";
+  $("blank-timerbar").style.transition = "none";
+  requestAnimationFrame(function(){
+    $("blank-timerbar").style.transition = "width " + (bg.duration/1000) + "s linear";
+    $("blank-timerbar").style.width = "0%";
+  });
+  bg.timer = setTimeout(function(){ answerBlank(false, null, correctChar, item.w); }, bg.duration);
+}
+
+function answerBlank(isCorrect, btnEl, correctChar, fullWord){
+  clearTimeout(bg.timer);
+  var buttons = document.querySelectorAll("#blank-answers .answer-btn");
+  buttons.forEach(function(b){
+    b.style.pointerEvents = "none";
+    if(b.textContent === correctChar) b.classList.add("correct");
+  });
+  if(!isCorrect && btnEl) btnEl.classList.add("wrong");
+  reactCharacter(isCorrect);
+
+  if(isCorrect){
+    bg.streak++;
+    bg.best = Math.max(bg.best, bg.streak);
+    bg.correct++;
+    var gain = 10 + bg.streak * 2;
+    bg.score += gain;
+    toast("+" + gain + " 정답!", true);
+  } else {
+    bg.streak = 0;
+    toast("정답: " + fullWord, false);
+  }
+  $("blank-score").textContent = bg.score;
+  $("blank-streak-num").textContent = bg.streak;
+  $("blank-streak-fill").style.width = Math.min(100, bg.streak * 20) + "%";
+  $("blank-word").textContent = fullWord;
+
+  bg.idx++;
+  setTimeout(nextBlank, 900);
+}
+
+function finishBlank(){
+  var xpGain = bg.correct * 10 + bg.best * 2;
+  var coinGain = bg.correct * 3;
+  showResult({
+    emoji:"🔤",
+    title: "빈칸 채우기 완료!",
+    sub: (state.level) + "단계 · " + (state.lang==="en"?"영어":"일본어"),
+    stats: [
+      {v: bg.score, l:"최종 점수"},
+      {v: bg.correct + "/" + bg.total, l:"정답 수"},
+      {v: bg.best, l:"최고 콤보"},
+      {v: Math.round(bg.correct/bg.total*100) + "%", l:"정답률"}
+    ]
+  }, xpGain, coinGain);
+}
+
+$("blank-back").addEventListener("click", function(){
+  clearTimeout(bg.timer);
+  showScreen("screen-home");
+});
+
+function showResult(data, xpGain, coinGain){
+  $("result-emoji").textContent = data.emoji;
+  $("result-title").textContent = data.title;
+  $("result-sub").textContent = data.sub;
+  var grid = $("result-stats");
+  grid.innerHTML = "";
+  data.stats.forEach(function(s){
+    var card = document.createElement("div");
+    card.className = "stat-card";
+    card.innerHTML = '<div class="v">' + s.v + '</div><div class="l">' + s.l + '</div>';
+    grid.appendChild(card);
+  });
+  $("reward-xp").textContent = xpGain;
+  $("reward-coin").textContent = coinGain;
+  showScreen("screen-result");
+  addRewards(xpGain, coinGain);
+}
+
+$("result-home").addEventListener("click", function(){ showScreen("screen-home"); });
+$("result-retry").addEventListener("click", function(){
+  if(state.mode === "match"){ startMatch(); }
+  else if(state.mode === "quiz"){ startQuiz(); }
+  else { startBlank(); }
+});
+
+loadPlayer();
+renderPet();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+  });
+}
+
+})();
+</script>
+</body>
+</html>
